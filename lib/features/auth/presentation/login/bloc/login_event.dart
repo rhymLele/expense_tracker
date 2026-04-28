@@ -6,12 +6,10 @@ sealed class LoginEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Màn hình vừa mở — reset về initial
 final class LoginStarted extends LoginEvent {
   const LoginStarted();
 }
 
-/// User nhấn nút đăng nhập
 final class LoginSubmitted extends LoginEvent {
   final String email;
   final String password;
@@ -20,12 +18,25 @@ final class LoginSubmitted extends LoginEvent {
   List<Object?> get props => [email, password];
 }
 
-/// Nhấn icon show/hide password
 final class LoginPasswordVisibilityToggled extends LoginEvent {
   const LoginPasswordVisibilityToggled();
 }
 
-/// Reset lỗi khi user bắt đầu nhập lại
 final class LoginErrorDismissed extends LoginEvent {
   const LoginErrorDismissed();
+}
+
+/// Kiểm tra biometric có khả dụng không khi màn hình mở
+final class BiometricStatusChecked extends LoginEvent {
+  const BiometricStatusChecked();
+}
+
+/// User nhấn nút biometric login
+final class BiometricLoginRequested extends LoginEvent {
+  const BiometricLoginRequested();
+}
+
+/// User đồng ý reset sau khi phát hiện enrollment thay đổi
+final class BiometricResetRequested extends LoginEvent {
+  const BiometricResetRequested();
 }

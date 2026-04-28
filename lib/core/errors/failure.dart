@@ -19,3 +19,8 @@ class CacheFailure extends Failure {
 class UnknownFailure extends Failure {
   const UnknownFailure([super.message = 'Đã có lỗi xảy ra, vui lòng thử lại']);
 }
+
+class AuthFailure extends Failure {
+  final String code;
+  const AuthFailure(super.message, {required this.code});
+}

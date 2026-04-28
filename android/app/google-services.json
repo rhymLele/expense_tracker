@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "198028144277",
+    "project_id": "mayofyouth-8a080",
+    "storage_bucket": "mayofyouth-8a080.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198028144277:android:6e111a0f780564d7cbf59c",
+        "android_client_info": {
+          "package_name": "com.example.sam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDAJngrc2Hbrms9-K0Cg0X-Ecu_naVIAk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

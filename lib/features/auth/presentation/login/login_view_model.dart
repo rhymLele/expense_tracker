@@ -28,6 +28,10 @@ class LoginViewModel extends BaseViewModel<LoginBloc> {
 
   void dismissError() => bloc.add(const LoginErrorDismissed());
 
+  void authenticateWithBiometric() => bloc.add(const BiometricLoginRequested());
+
+  void resetBiometric() => bloc.add(const BiometricResetRequested());
+
   String? validateEmail(String? v) => AppValidator.email(v);
   String? validatePassword(String? v) => AppValidator.password(v);
 

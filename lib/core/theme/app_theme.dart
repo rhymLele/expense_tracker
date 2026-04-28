@@ -15,6 +15,7 @@ class AppTheme {
           onSecondary: AppColors.background,
           onSurface: AppColors.textPrimary,
           onError: AppColors.background,
+          outline: AppColors.divider,
         ),
         scaffoldBackgroundColor: AppColors.background,
         appBarTheme: const AppBarTheme(

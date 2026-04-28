@@ -5,6 +5,7 @@ import '../../../../core/constants/sizes.dart';
 import '../../../../core/constants/text_styles.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/base_button.dart';
+import '../../../../core/widgets/base_icon_button.dart';
 import '../../../../core/widgets/base_loading.dart';
 import '../../../../core/widgets/base_text_field.dart';
 import '../shared/src.dart';
@@ -58,31 +59,35 @@ class RegisterPage extends StatelessWidget {
           onPressed: () => Navigator.pop(ctx),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.paddingXl,
-            vertical: AppSizes.paddingMd,
-          ),
-          child: Form(
-            key: vm.formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const _Header(),
-                const SizedBox(height: AppSizes.xxxl),
-                _NameField(vm: vm),
-                const SizedBox(height: AppSizes.paddingLg),
-                _EmailField(vm: vm),
-                const SizedBox(height: AppSizes.paddingLg),
-                _PasswordField(vm: vm, state: state),
-                const SizedBox(height: AppSizes.paddingLg),
-                _ConfirmPasswordField(vm: vm, state: state),
-                const SizedBox(height: AppSizes.xxxl),
-                _SubmitButton(onPressed: vm.submit, isLoading: state.isLoading),
-                const SizedBox(height: AppSizes.paddingLg),
-                const _LoginLink(),
-              ],
+      body: GestureDetector(
+        onTap: () => FocusScope.of(ctx).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.paddingXl,
+              vertical: AppSizes.paddingMd,
+            ),
+            child: Form(
+              key: vm.formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _Header(),
+                  const SizedBox(height: AppSizes.xxxl),
+                  _NameField(vm: vm),
+                  const SizedBox(height: AppSizes.paddingLg),
+                  _EmailField(vm: vm),
+                  const SizedBox(height: AppSizes.paddingLg),
+                  _PasswordField(vm: vm, state: state),
+                  const SizedBox(height: AppSizes.paddingLg),
+                  _ConfirmPasswordField(vm: vm, state: state),
+                  const SizedBox(height: AppSizes.xxxl),
+                  _SubmitButton(onPressed: vm.submit, isLoading: state.isLoading),
+                  const SizedBox(height: AppSizes.paddingLg),
+                  const _LoginLink(),
+                ],
+              ),
             ),
           ),
         ),
@@ -112,19 +117,13 @@ class _NameField extends StatelessWidget {
   const _NameField({required this.vm});
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Họ và tên', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppSizes.paddingSm),
-          BaseTextField(
-            controller: vm.nameController,
-            hintText: 'Nhập họ và tên',
-            textInputAction: TextInputAction.next,
-            prefixIcon: const Icon(Icons.person_outline, color: AppColors.textHint),
-            validator: vm.validateName,
-          ),
-        ],
+  Widget build(BuildContext context) => BaseTextField(
+        controller: vm.nameController,
+        labelText: 'Họ và tên',
+        hintText: 'Nguyễn Văn A',
+        textInputAction: TextInputAction.next,
+        prefixIcon: const Icon(Icons.person_outline, color: AppColors.textHint),
+        validator: vm.validateName,
       );
 }
 
@@ -133,20 +132,14 @@ class _EmailField extends StatelessWidget {
   const _EmailField({required this.vm});
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Email', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppSizes.paddingSm),
-          BaseTextField(
-            controller: vm.emailController,
-            hintText: 'Nhập email',
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-            prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textHint),
-            validator: vm.validateEmail,
-          ),
-        ],
+  Widget build(BuildContext context) => BaseTextField(
+        controller: vm.emailController,
+        labelText: 'Email',
+        hintText: 'name@example.com',
+        keyboardType: TextInputType.emailAddress,
+        textInputAction: TextInputAction.next,
+        prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textHint),
+        validator: vm.validateEmail,
       );
 }
 
@@ -156,29 +149,23 @@ class _PasswordField extends StatelessWidget {
   const _PasswordField({required this.vm, required this.state});
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Mật khẩu', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppSizes.paddingSm),
-          BaseTextField(
-            controller: vm.passwordController,
-            hintText: 'Nhập mật khẩu',
-            obscureText: state.obscurePassword,
-            textInputAction: TextInputAction.next,
-            prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textHint),
-            suffixIcon: IconButton(
-              icon: Icon(
-                state.obscurePassword
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: AppColors.textHint,
-              ),
-              onPressed: vm.togglePasswordVisibility,
-            ),
-            validator: vm.validatePassword,
+  Widget build(BuildContext context) => BaseTextField(
+        controller: vm.passwordController,
+        labelText: 'Mật khẩu',
+        hintText: '••••••••',
+        obscureText: state.obscurePassword,
+        textInputAction: TextInputAction.next,
+        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textHint),
+        suffixIcon: BaseIconButton(
+          icon: Icon(
+            state.obscurePassword
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
+            color: AppColors.textHint,
           ),
-        ],
+          onPressed: vm.togglePasswordVisibility,
+        ),
+        validator: vm.validatePassword,
       );
 }
 
@@ -188,29 +175,23 @@ class _ConfirmPasswordField extends StatelessWidget {
   const _ConfirmPasswordField({required this.vm, required this.state});
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Xác nhận mật khẩu', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppSizes.paddingSm),
-          BaseTextField(
-            controller: vm.confirmController,
-            hintText: 'Nhập lại mật khẩu',
-            obscureText: state.obscureConfirmPassword,
-            textInputAction: TextInputAction.done,
-            prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textHint),
-            suffixIcon: IconButton(
-              icon: Icon(
-                state.obscureConfirmPassword
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: AppColors.textHint,
-              ),
-              onPressed: vm.toggleConfirmPasswordVisibility,
-            ),
-            validator: vm.validateConfirmPassword,
+  Widget build(BuildContext context) => BaseTextField(
+        controller: vm.confirmController,
+        labelText: 'Xác nhận mật khẩu',
+        hintText: '••••••••',
+        obscureText: state.obscureConfirmPassword,
+        textInputAction: TextInputAction.done,
+        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textHint),
+        suffixIcon: BaseIconButton(
+          icon: Icon(
+            state.obscureConfirmPassword
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
+            color: AppColors.textHint,
           ),
-        ],
+          onPressed: vm.toggleConfirmPasswordVisibility,
+        ),
+        validator: vm.validateConfirmPassword,
       );
 }
 

@@ -5,6 +5,7 @@ import '../../../../core/constants/sizes.dart';
 import '../../../../core/constants/text_styles.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/base_button.dart';
+import '../../../../core/widgets/base_icon_button.dart';
 import '../../../../core/widgets/base_loading.dart';
 import '../../../../core/widgets/base_text_field.dart';
 import '../shared/src.dart';
@@ -56,7 +57,10 @@ class LoginPage extends StatelessWidget {
   Widget _buildScaffold(BuildContext ctx, LoginState state, LoginViewModel vm) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(ctx).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSizes.paddingXl,
@@ -77,12 +81,24 @@ class LoginPage extends StatelessWidget {
                 const _ForgotPasswordButton(),
                 const SizedBox(height: AppSizes.xxxl),
                 _SubmitButton(onPressed: vm.submit, isLoading: state.isLoading),
+                if (state.showEnrollmentChangedWarning) ...[
+                  const SizedBox(height: AppSizes.paddingMd),
+                  _EnrollmentChangedBanner(onReset: vm.resetBiometric),
+                ],
+                if (state.showBiometricButton) ...[
+                  const SizedBox(height: AppSizes.paddingLg),
+                  _BiometricButton(
+                    onPressed: vm.authenticateWithBiometric,
+                    isLoading: state.isBiometricLoading,
+                  ),
+                ],
                 const SizedBox(height: AppSizes.paddingLg),
                 const _RegisterLink(),
               ],
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -119,20 +135,14 @@ class _EmailField extends StatelessWidget {
   const _EmailField({required this.vm});
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Email', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppSizes.paddingSm),
-          BaseTextField(
-            controller: vm.emailController,
-            hintText: 'Nhập email của bạn',
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-            prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textHint),
-            validator: vm.validateEmail,
-          ),
-        ],
+  Widget build(BuildContext context) => BaseTextField(
+        controller: vm.emailController,
+        labelText: 'Email',
+        hintText: 'name@example.com',
+        keyboardType: TextInputType.emailAddress,
+        textInputAction: TextInputAction.next,
+        prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textHint),
+        validator: vm.validateEmail,
       );
 }
 
@@ -142,29 +152,23 @@ class _PasswordField extends StatelessWidget {
   const _PasswordField({required this.vm, required this.state});
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Mật khẩu', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppSizes.paddingSm),
-          BaseTextField(
-            controller: vm.passwordController,
-            hintText: 'Nhập mật khẩu',
-            obscureText: state.obscurePassword,
-            textInputAction: TextInputAction.done,
-            prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textHint),
-            suffixIcon: IconButton(
-              icon: Icon(
-                state.obscurePassword
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: AppColors.textHint,
-              ),
-              onPressed: vm.togglePasswordVisibility,
-            ),
-            validator: vm.validatePassword,
+  Widget build(BuildContext context) => BaseTextField(
+        controller: vm.passwordController,
+        labelText: 'Mật khẩu',
+        hintText: '••••••••',
+        obscureText: state.obscurePassword,
+        textInputAction: TextInputAction.done,
+        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textHint),
+        suffixIcon: BaseIconButton(
+          icon: Icon(
+            state.obscurePassword
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
+            color: AppColors.textHint,
           ),
-        ],
+          onPressed: vm.togglePasswordVisibility,
+        ),
+        validator: vm.validatePassword,
       );
 }
 
@@ -216,5 +220,75 @@ class _RegisterLink extends StatelessWidget {
             child: const Text('Đăng ký ngay'),
           ),
         ],
+      );
+}
+
+class _EnrollmentChangedBanner extends StatelessWidget {
+  final VoidCallback onReset;
+  const _EnrollmentChangedBanner({required this.onReset});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(AppSizes.paddingMd),
+        decoration: BoxDecoration(
+          color: AppColors.warning.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+          border: Border.all(color: AppColors.warning, width: 1),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 20),
+            const SizedBox(width: AppSizes.paddingSm),
+            Expanded(
+              child: Text(
+                'Thông tin sinh trắc học đã thay đổi. Vui lòng thiết lập lại.',
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.warning),
+              ),
+            ),
+            TextButton(
+              onPressed: onReset,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.warning,
+                padding: const EdgeInsets.symmetric(horizontal: AppSizes.paddingSm),
+              ),
+              child: const Text('Đặt lại', style: AppTextStyles.labelMedium),
+            ),
+          ],
+        ),
+      );
+}
+
+class _BiometricButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final bool isLoading;
+  const _BiometricButton({required this.onPressed, required this.isLoading});
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 52),
+          side: const BorderSide(color: AppColors.primary),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+          ),
+        ),
+        child: isLoading
+            ? const BaseLoading(color: AppColors.primary, size: 24)
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.fingerprint, color: AppColors.primary, size: 24),
+                  SizedBox(width: AppSizes.paddingSm),
+                  Text(
+                    'Đăng nhập bằng sinh trắc học',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
       );
 }

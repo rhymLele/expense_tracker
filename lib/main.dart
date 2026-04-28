@@ -8,12 +8,17 @@ import 'core/l10n/app_localizations.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/shared/auth_bloc.dart';
+import 'firebase_options.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await setupLocator();
+  await initConfigure();
   runApp(const MyApp());
+}
+
+Future<void> initConfigure() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await setupLocator();
 }
 
 class MyApp extends StatelessWidget {
