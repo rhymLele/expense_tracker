@@ -1,5 +1,6 @@
 import '../../../../core/models/paginated_result.dart';
 import '../../../../core/network/api_constants.dart';
+import '../../../../core/network/api_response_mapper.dart';
 import '../../../../core/network/base_remote_datasource.dart';
 import '../../../../core/network/http_method.dart';
 import '../models/journey_day_model.dart';
@@ -18,7 +19,7 @@ class JourneysRemoteDataSourceImpl extends BaseRemoteDataSource
   @override
   Future<JourneyModel> getJourney(String id) async {
     final res = await baseSendRequest(ApiConstants.journeyById(id), HttpMethod.get);
-    return JourneyModel.fromJson(res['data'] as Map<String, dynamic>);
+    return ApiResponseMapper.single(res, JourneyModel.fromJson);
   }
 
   @override
@@ -32,13 +33,7 @@ class JourneysRemoteDataSourceImpl extends BaseRemoteDataSource
       HttpMethod.get,
       queryParameters: {'teacherId': teacherId, 'page': page, 'limit': limit},
     );
-    final data = res['data'] as List;
-    return PaginatedResult(
-      items: data
-          .map((e) => JourneyModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      count: res['count'] as int? ?? data.length,
-    );
+    return ApiResponseMapper.paginated(res, JourneyModel.fromJson);
   }
 
   @override
@@ -47,10 +42,7 @@ class JourneysRemoteDataSourceImpl extends BaseRemoteDataSource
       ApiConstants.journeyDays(journeyId),
       HttpMethod.get,
     );
-    final data = res['data'] as List;
-    return data
-        .map((e) => JourneyDayModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return ApiResponseMapper.paginated(res, JourneyDayModel.fromJson).items;
   }
 
   @override

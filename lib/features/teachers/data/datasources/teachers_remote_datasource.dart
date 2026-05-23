@@ -1,5 +1,6 @@
 import '../../../../core/models/paginated_result.dart';
 import '../../../../core/network/api_constants.dart';
+import '../../../../core/network/api_response_mapper.dart';
 import '../../../../core/network/base_remote_datasource.dart';
 import '../../../../core/network/http_method.dart';
 import '../models/teacher_profile_model.dart';
@@ -36,13 +37,7 @@ class TeachersRemoteDataSourceImpl extends BaseRemoteDataSource
         'limit': limit,
       },
     );
-    final data = res['data'] as List;
-    return PaginatedResult(
-      items: data
-          .map((e) => TeacherProfileModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      count: res['count'] as int? ?? data.length,
-    );
+    return ApiResponseMapper.paginated(res, TeacherProfileModel.fromJson);
   }
 
   @override
@@ -51,7 +46,7 @@ class TeachersRemoteDataSourceImpl extends BaseRemoteDataSource
       ApiConstants.teacherProfile(userId),
       HttpMethod.get,
     );
-    return TeacherProfileModel.fromJson(res['data'] as Map<String, dynamic>);
+    return ApiResponseMapper.single(res, TeacherProfileModel.fromJson);
   }
 
   @override
@@ -67,6 +62,6 @@ class TeachersRemoteDataSourceImpl extends BaseRemoteDataSource
         if (teachingMode != null) 'teachingMode': teachingMode,
       },
     );
-    return TeacherProfileModel.fromJson(res['data'] as Map<String, dynamic>);
+    return ApiResponseMapper.single(res, TeacherProfileModel.fromJson);
   }
 }

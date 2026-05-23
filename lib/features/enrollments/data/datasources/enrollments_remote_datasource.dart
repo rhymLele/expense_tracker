@@ -1,4 +1,5 @@
 import '../../../../core/network/api_constants.dart';
+import '../../../../core/network/api_response_mapper.dart';
 import '../../../../core/network/base_remote_datasource.dart';
 import '../../../../core/network/http_method.dart';
 import '../models/enrollment_model.dart';
@@ -14,10 +15,7 @@ class EnrollmentsRemoteDataSourceImpl extends BaseRemoteDataSource
   @override
   Future<List<EnrollmentModel>> getMyEnrollments() async {
     final res = await baseSendRequest(ApiConstants.myEnrollments, HttpMethod.get);
-    final data = res['data'] as List;
-    return data
-        .map((e) => EnrollmentModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return ApiResponseMapper.paginated(res, EnrollmentModel.fromJson).items;
   }
 
   @override
@@ -26,7 +24,7 @@ class EnrollmentsRemoteDataSourceImpl extends BaseRemoteDataSource
       ApiConstants.todayTasks(enrollmentId),
       HttpMethod.get,
     );
-    return TodayTasksModel.fromJson(res['data'] as Map<String, dynamic>);
+    return ApiResponseMapper.single(res, TodayTasksModel.fromJson);
   }
 
   @override

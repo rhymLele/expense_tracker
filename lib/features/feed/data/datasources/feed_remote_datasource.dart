@@ -20,12 +20,30 @@ class FeedRemoteDataSourceImpl extends BaseRemoteDataSource
       HttpMethod.get,
       queryParameters: {'page': page, 'limit': limit},
     );
-    final data = res['data'] as List;
+
+    // Handle both flat { data: [...], count: N }
+    // and nested { data: { data/items: [...], count/total: N } }
+    final rawData = res['data'];
+    final List dataList;
+    final int count;
+
+    if (rawData is List) {
+      dataList = rawData;
+      count = res['count'] as int? ?? dataList.length;
+    } else if (rawData is Map) {
+      final nested = rawData['data'] ?? rawData['items'] ?? rawData['topics'] ?? [];
+      dataList = nested is List ? nested : [];
+      count = (rawData['count'] ?? rawData['total'] ?? res['count'] ?? dataList.length) as int;
+    } else {
+      dataList = [];
+      count = 0;
+    }
+
     return PaginatedResult(
-      items: data
+      items: dataList
           .map((e) => TopicModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      count: res['count'] as int? ?? data.length,
+      count: count,
     );
   }
 }

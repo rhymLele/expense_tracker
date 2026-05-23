@@ -1,5 +1,6 @@
 import '../../../../core/models/paginated_result.dart';
 import '../../../../core/network/api_constants.dart';
+import '../../../../core/network/api_response_mapper.dart';
 import '../../../../core/network/base_remote_datasource.dart';
 import '../../../../core/network/http_method.dart';
 import '../models/exercise_model.dart';
@@ -15,7 +16,7 @@ class ExercisesRemoteDataSourceImpl extends BaseRemoteDataSource
   @override
   Future<ExerciseModel> getExercise(String id) async {
     final res = await baseSendRequest(ApiConstants.exerciseById(id), HttpMethod.get);
-    return ExerciseModel.fromJson(res['data'] as Map<String, dynamic>);
+    return ApiResponseMapper.single(res, ExerciseModel.fromJson);
   }
 
   @override
@@ -29,12 +30,6 @@ class ExercisesRemoteDataSourceImpl extends BaseRemoteDataSource
       HttpMethod.get,
       queryParameters: {'page': page, 'limit': limit},
     );
-    final data = res['data'] as List;
-    return PaginatedResult(
-      items: data
-          .map((e) => ExerciseModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      count: res['count'] as int? ?? data.length,
-    );
+    return ApiResponseMapper.paginated(res, ExerciseModel.fromJson);
   }
 }

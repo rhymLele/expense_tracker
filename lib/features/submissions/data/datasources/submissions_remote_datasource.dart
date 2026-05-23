@@ -1,4 +1,5 @@
 import '../../../../core/network/api_constants.dart';
+import '../../../../core/network/api_response_mapper.dart';
 import '../../../../core/network/base_remote_datasource.dart';
 import '../../../../core/network/http_method.dart';
 import '../models/submission_model.dart';
@@ -30,7 +31,7 @@ class SubmissionsRemoteDataSourceImpl extends BaseRemoteDataSource
         'answer': answer,
       },
     );
-    return SubmissionModel.fromJson(res['data'] as Map<String, dynamic>);
+    return ApiResponseMapper.single(res, SubmissionModel.fromJson);
   }
 
   @override
@@ -40,9 +41,6 @@ class SubmissionsRemoteDataSourceImpl extends BaseRemoteDataSource
       ApiConstants.submissionsByEnrollment(enrollmentId),
       HttpMethod.get,
     );
-    final data = res['data'] as List;
-    return data
-        .map((e) => SubmissionModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return ApiResponseMapper.list(res, SubmissionModel.fromJson);
   }
 }

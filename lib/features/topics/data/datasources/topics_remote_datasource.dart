@@ -1,5 +1,6 @@
 import '../../../../core/models/paginated_result.dart';
 import '../../../../core/network/api_constants.dart';
+import '../../../../core/network/api_response_mapper.dart';
 import '../../../../core/network/base_remote_datasource.dart';
 import '../../../../core/network/http_method.dart';
 import '../models/topic_comment_model.dart';
@@ -23,7 +24,7 @@ class TopicsRemoteDataSourceImpl extends BaseRemoteDataSource
   @override
   Future<TopicModel> getTopic(String id) async {
     final res = await baseSendRequest(ApiConstants.topicById(id), HttpMethod.get);
-    return TopicModel.fromJson(res['data'] as Map<String, dynamic>);
+    return ApiResponseMapper.single(res, TopicModel.fromJson);
   }
 
   @override
@@ -37,13 +38,7 @@ class TopicsRemoteDataSourceImpl extends BaseRemoteDataSource
       HttpMethod.get,
       queryParameters: {'page': page, 'limit': limit},
     );
-    final data = res['data'] as List;
-    return PaginatedResult(
-      items: data
-          .map((e) => TopicModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      count: res['count'] as int? ?? data.length,
-    );
+    return ApiResponseMapper.paginated(res, TopicModel.fromJson);
   }
 
   @override
@@ -56,10 +51,7 @@ class TopicsRemoteDataSourceImpl extends BaseRemoteDataSource
       ApiConstants.topicComments(topicId),
       HttpMethod.get,
     );
-    final data = res['data'] as List;
-    return data
-        .map((e) => TopicCommentModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return ApiResponseMapper.paginated(res, TopicCommentModel.fromJson).items;
   }
 
   @override
@@ -76,6 +68,6 @@ class TopicsRemoteDataSourceImpl extends BaseRemoteDataSource
         if (parentId != null) 'parentId': parentId,
       },
     );
-    return TopicCommentModel.fromJson(res['data'] as Map<String, dynamic>);
+    return ApiResponseMapper.single(res, TopicCommentModel.fromJson);
   }
 }
