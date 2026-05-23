@@ -53,7 +53,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     final result = await _registerUseCase(
       email: event.email,
       password: event.password,
-      fullName: event.fullName,
+      name: event.name,
     );
 
     result.fold(

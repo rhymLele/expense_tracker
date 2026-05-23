@@ -29,13 +29,13 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Result<UserEntity>> register({
     required String email,
     required String password,
-    required String fullName,
+    required String name,
   }) async {
     try {
       final user = await _dataSource.register(
         email: email,
         password: password,
-        fullName: fullName,
+        name: name,
       );
       return Result.success(user);
     } on AppException catch (e) {
@@ -53,7 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on AppException catch (e) {
       return Result.failure(e.toFailure());
     } catch (e) {
-      return Result.failure(UnknownFailure());
+      return Result.failure(const UnknownFailure());
     }
   }
 

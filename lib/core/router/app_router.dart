@@ -4,6 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/auth/presentation/login/src.dart';
 import '../../features/auth/presentation/register/src.dart';
 import '../../features/auth/presentation/splash/src.dart';
+import '../../features/home/presentation/home_page.dart';
+import '../../features/teachers/presentation/teacher_profile_page.dart';
+import '../../features/teachers/presentation/teacher_profile_view_model.dart';
+import '../../features/topics/presentation/topic_detail_page.dart';
+import '../../features/topics/presentation/topic_detail_view_model.dart';
 import '../base/base_view_model.dart';
 import '../di/service_locator.dart';
 
@@ -13,6 +18,8 @@ class AppRoutes {
   static const String register = '/register';
   static const String home = '/home';
   static const String forgotPassword = '/forgot-password';
+  static const String teacherProfile = '/teacher-profile';
+  static const String topicDetail = '/topic-detail';
 }
 
 class AppRouter {
@@ -28,9 +35,20 @@ class AppRouter {
         return _vmRoute(settings, sl<RegisterViewModel>(), const RegisterPage());
 
       case AppRoutes.home:
-        return _route(
-          (_) => const Scaffold(body: Center(child: Text('Home — coming soon'))),
+        return _route((_) => const HomePage(), settings);
+
+      case AppRoutes.teacherProfile:
+        return _vmRoute(
           settings,
+          sl<TeacherProfileViewModel>(),
+          const TeacherProfilePage(),
+        );
+
+      case AppRoutes.topicDetail:
+        return _vmRoute(
+          settings,
+          sl<TopicDetailViewModel>(),
+          const TopicDetailPage(),
         );
 
       default:

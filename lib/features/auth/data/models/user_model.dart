@@ -1,30 +1,33 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/user_entity.dart';
 
 class UserModel extends UserEntity {
   const UserModel({
     required super.id,
     required super.email,
-    required super.fullName,
-    super.photoUrl,
+    required super.name,
+    super.bio,
+    super.avatarUrl,
+    super.role,
     required super.createdAt,
   });
 
-  factory UserModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return UserModel(
-      id: doc.id,
-      email: data['email'] as String,
-      fullName: data['fullName'] as String,
-      photoUrl: data['photoUrl'] as String?,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-    );
-  }
+  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
+        id: json['id'] as String,
+        email: json['email'] as String,
+        name: json['name'] as String? ?? '',
+        bio: json['bio'] as String?,
+        avatarUrl: json['avatarUrl'] as String?,
+        role: json['role'] as String? ?? 'student',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      );
 
-  Map<String, dynamic> toFirestore() => {
+  Map<String, dynamic> toJson() => {
+        'id': id,
         'email': email,
-        'fullName': fullName,
-        'photoUrl': photoUrl,
-        'createdAt': Timestamp.fromDate(createdAt),
+        'name': name,
+        'bio': bio,
+        'avatarUrl': avatarUrl,
+        'role': role,
+        'createdAt': createdAt.toIso8601String(),
       };
 }

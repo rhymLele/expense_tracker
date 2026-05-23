@@ -1,9 +1,8 @@
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/network/api_constants.dart';
+import '../../../../core/network/base_remote_datasource.dart';
+import '../../../../core/network/http_method.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -11,121 +10,76 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> register({
     required String email,
     required String password,
-    required String fullName,
+    required String name,
   });
   Future<void> logout();
   Future<UserModel?> getCurrentUser();
 }
 
-class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+class AuthRemoteDataSourceImpl extends BaseRemoteDataSource
+    implements AuthRemoteDataSource {
+  final TokenStorage _tokenStorage;
 
-  const AuthRemoteDataSourceImpl({
-    required FirebaseAuth auth,
-    required FirebaseFirestore firestore,
-  })  : _auth = auth,
-        _firestore = firestore;
+  AuthRemoteDataSourceImpl({required TokenStorage tokenStorage})
+      : _tokenStorage = tokenStorage;
 
   @override
   Future<UserModel> login({
     required String email,
     required String password,
   }) async {
-    try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      final uid = credential.user!.uid;
-      final doc = await _firestore.collection('users').doc(uid).get();
-      if (!doc.exists) {
-        throw const NotFoundException('Không tìm thấy thông tin người dùng');
-      }
-      return UserModel.fromFirestore(doc);
-    } on AppException {
-      rethrow;
-    } on FirebaseAuthException catch (e) {
-      throw AuthException.fromCode(e.code, firebaseMessage: e.message);
-    } on FirebaseException catch (e) {
-      throw _mapFirestoreException(e);
-    } on SocketException {
-      throw const NetworkException();
-    } catch (e) {
-      throw ServerException(code: 'unknown', message: e.toString());
-    }
+    final res = await baseSendRequest(
+      ApiConstants.login,
+      HttpMethod.post,
+      data: {'email': email, 'password': password},
+    );
+    await _saveTokens(res['data'] as Map<String, dynamic>);
+    return _fetchMe();
   }
 
   @override
   Future<UserModel> register({
     required String email,
     required String password,
-    required String fullName,
+    required String name,
   }) async {
-    try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      final uid = credential.user!.uid;
-      final now = DateTime.now();
-      final model = UserModel(
-        id: uid,
-        email: email,
-        fullName: fullName,
-        createdAt: now,
-      );
-      await _firestore.collection('users').doc(uid).set(model.toFirestore());
-      return model;
-    } on AppException {
-      rethrow;
-    } on FirebaseAuthException catch (e) {
-      throw AuthException.fromCode(e.code, firebaseMessage: e.message);
-    } on FirebaseException catch (e) {
-      throw _mapFirestoreException(e);
-    } on SocketException {
-      throw const NetworkException();
-    } catch (e) {
-      throw ServerException(code: 'unknown', message: e.toString());
-    }
+    final res = await baseSendRequest(
+      ApiConstants.register,
+      HttpMethod.post,
+      data: {'email': email, 'password': password, 'name': name},
+    );
+    await _saveTokens(res['data'] as Map<String, dynamic>);
+    return _fetchMe();
   }
 
   @override
   Future<void> logout() async {
     try {
-      await _auth.signOut();
-    } on FirebaseException catch (e) {
-      throw _mapFirestoreException(e);
-    } on SocketException {
-      throw const NetworkException();
+      await baseSendRequest(ApiConstants.logout, HttpMethod.post);
+    } finally {
+      await _tokenStorage.clearTokens();
     }
   }
 
   @override
   Future<UserModel?> getCurrentUser() async {
+    final token = await _tokenStorage.getAccessToken();
+    if (token == null) return null;
     try {
-      final user = _auth.currentUser;
-      if (user == null) return null;
-      final doc = await _firestore.collection('users').doc(user.uid).get();
-      if (!doc.exists) return null;
-      return UserModel.fromFirestore(doc);
-    } on FirebaseException catch (e) {
-      throw _mapFirestoreException(e);
-    } on SocketException {
-      throw const NetworkException();
+      return await _fetchMe();
+    } on AppException {
+      return null;
     }
   }
 
-  AppException _mapFirestoreException(FirebaseException e) => switch (e.code) {
-        'not-found'         => const NotFoundException(),
-        'permission-denied' => ServerException(
-            code: e.code,
-            message: 'Không có quyền truy cập',
-          ),
-        'unavailable'       => const NetworkException(),
-        _                   => ServerException(
-            code: e.code,
-            message: e.message ?? 'Lỗi server, vui lòng thử lại',
-          ),
-      };
+  Future<void> _saveTokens(Map<String, dynamic> data) =>
+      _tokenStorage.saveTokens(
+        accessToken: data['accessToken'] as String,
+        refreshToken: data['refreshToken'] as String,
+      );
+
+  Future<UserModel> _fetchMe() async {
+    final res = await baseSendRequest(ApiConstants.authMe, HttpMethod.get);
+    return UserModel.fromJson(res['data'] as Map<String, dynamic>);
+  }
 }

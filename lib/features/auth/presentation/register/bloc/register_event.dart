@@ -11,18 +11,18 @@ final class RegisterStarted extends RegisterEvent {
 }
 
 final class RegisterSubmitted extends RegisterEvent {
-  final String fullName;
+  final String name;
   final String email;
   final String password;
 
   const RegisterSubmitted({
-    required this.fullName,
+    required this.name,
     required this.email,
     required this.password,
   });
 
   @override
-  List<Object?> get props => [fullName, email, password];
+  List<Object?> get props => [name, email, password];
 }
 
 final class RegisterPasswordVisibilityToggled extends RegisterEvent {

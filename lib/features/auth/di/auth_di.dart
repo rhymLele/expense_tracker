@@ -1,8 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../../core/base/base_feature_di.dart';
+import '../../../core/storage/token_storage.dart';
 import '../data/datasources/auth_remote_datasource.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import '../domain/repositories/auth_repository.dart';
@@ -18,10 +17,7 @@ class AuthDI extends BaseFeatureDI {
   @override
   void datasources(GetIt sl) {
     sl.registerLazySingleton<AuthRemoteDataSource>(
-      () => AuthRemoteDataSourceImpl(
-        auth: sl<FirebaseAuth>(),
-        firestore: sl<FirebaseFirestore>(),
-      ),
+      () => AuthRemoteDataSourceImpl(tokenStorage: sl<TokenStorage>()),
     );
   }
 

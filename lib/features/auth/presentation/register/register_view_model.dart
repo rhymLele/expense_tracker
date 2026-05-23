@@ -20,7 +20,7 @@ class RegisterViewModel extends BaseViewModel<RegisterBloc> {
   void submit() {
     if (!formKey.currentState!.validate()) return;
     bloc.add(RegisterSubmitted(
-      fullName: nameController.text.trim(),
+      name: nameController.text.trim(),
       email: emailController.text.trim(),
       password: passwordController.text,
     ));

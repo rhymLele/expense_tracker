@@ -10,7 +10,7 @@ abstract class AuthRepository {
   Future<Result<UserEntity>> register({
     required String email,
     required String password,
-    required String fullName,
+    required String name,
   });
 
   Future<Result<void>> logout();
