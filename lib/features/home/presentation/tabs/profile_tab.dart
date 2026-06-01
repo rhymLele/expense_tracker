@@ -9,6 +9,7 @@ import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/shared/auth_bloc.dart';
 import '../../../auth/presentation/shared/auth_event.dart';
 import '../../../auth/presentation/shared/auth_state.dart';
+import '../../../follows/presentation/cubit/follow_cubit.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key});
@@ -22,7 +23,7 @@ class ProfileTab extends StatelessWidget {
         return CustomScrollView(
           slivers: [
             SliverToBoxAdapter(child: _buildHeader(user)),
-            SliverToBoxAdapter(child: _buildStats()),
+            SliverToBoxAdapter(child: _buildStats(context)),
             SliverPadding(
               padding: const EdgeInsets.all(AppSizes.paddingLg),
               sliver: SliverList.list(children: [
@@ -130,7 +131,8 @@ class ProfileTab extends StatelessWidget {
     );
   }
 
-  Widget _buildStats() {
+  Widget _buildStats(BuildContext context) {
+    final followCount = context.watch<FollowCubit?>()?.state.followedIds.length ?? 0;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSizes.paddingLg),
       padding: const EdgeInsets.all(AppSizes.paddingLg),
@@ -139,13 +141,18 @@ class ProfileTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         border: Border.all(color: AppColors.divider),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Expanded(child: _StatItem(value: '0', label: 'Đang học')),
-          _StatDivider(),
-          Expanded(child: _StatItem(value: '0', label: 'Đã hoàn thành')),
-          _StatDivider(),
-          Expanded(child: _StatItem(value: '0', label: 'Theo dõi')),
+          const Expanded(child: _StatItem(value: '0', label: 'Đang học')),
+          const _StatDivider(),
+          const Expanded(child: _StatItem(value: '0', label: 'Đã hoàn thành')),
+          const _StatDivider(),
+          Expanded(
+            child: _StatItem(
+              value: '$followCount',
+              label: 'Đang theo dõi',
+            ),
+          ),
         ],
       ),
     );

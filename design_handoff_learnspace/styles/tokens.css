@@ -1,0 +1,181 @@
+/* ──────────────────────────────────────────────────────────────────
+   EasyCRM Design System — tokens
+   Primary brand: #5CC691 (mint green). Vietnamese UI. Operational.
+   ────────────────────────────────────────────────────────────────── */
+
+/* Webfont: Noto Sans (primary) + Inter (secondary) — local self-hosted */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  /* ────────── PRIMARY (brand mint green) ────────── */
+  --color-primary-50:  #EFF9F4;
+  --color-primary-100: #DDF3E5;
+  --color-primary-200: #CCEDDD;
+  --color-primary-300: #7DD1A7;
+  --color-primary-400: #6FCC9C;
+  --color-primary-500: #5CC691;   /* MAIN */
+  --color-primary-600: #418D67;
+  --color-primary-700: #356F52;
+  --color-primary-800: #255053;
+  --color-primary:     var(--color-primary-500);
+  --color-primary-hover:  var(--color-primary-600);
+  --color-primary-pressed: var(--color-primary-700);
+
+  /* ────────── SECONDARY (purple — tags only) ────────── */
+  --color-purple-50:  #F4EFFE;
+  --color-purple-300: #B399EC;
+  --color-purple-500: #764FDB;
+  --color-purple-700: #4F2EA3;
+
+  /* ────────── PRIMITIVE SECONDARY (teal/orange — parent SoftDreams system, rarely applied) ────────── */
+  --color-teal-500: #449297;
+  --color-orange-500: #E37E36;
+
+  /* ────────── NEUTRALS (cool gray) ────────── */
+  --color-white:    #FFFFFF;
+  --color-bg-page:  #F7F7F7;
+  --color-bg-page-alt: #F3F3F3;
+  --color-bg-muted: #F5F5F5;
+  --color-stroke-soft: #EEEEEE;
+  --color-stroke:      #EAEAEA;
+  --color-stroke-strong: #E3E8EF;
+  --color-divider:     #E7E7ED;
+
+  --color-fg:          #101828; /* primary text */
+  --color-fg-strong:   #0D0D0D;
+  --color-fg-secondary:#364152;
+  --color-fg-muted:    #697586;
+  --color-fg-placeholder: #9DA4AE;
+  --color-fg-disabled: #B0B0B0;
+
+  --color-sidebar:     #545358;
+  --color-sidebar-2:   #706F73;
+
+  /* ────────── SEMANTIC ────────── */
+  --color-success-50:  #EFF9F4;
+  --color-success-100: #E0FFEB;
+  --color-success-500: #5CC691;
+  --color-success-700: #418D67;
+
+  --color-warning-50:  #FFFAE7;
+  --color-warning-100: #FDF9E6;
+  --color-warning-500: #E37E36;
+  --color-warning-700: #B0860B;
+
+  --color-danger-50:   #FFEBEA;
+  --color-danger-500:  #EB5146;
+  --color-danger-700:  #B83A30;
+
+  --color-info-50:     #E8F4FF;
+  --color-info-500:    #2A6FDB;
+  --color-info-700:    #1F4FA6;
+
+  /* ────────── TYPE ────────── */
+  --font-sans: "Noto Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Inter", "Noto Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-semibold: 600;
+  --fw-bold:    700;
+
+  /* Heading ramp (semibold 600 unless stated). lh = 1.5 unless H1 */
+  --fs-h1: 64px;   --lh-h1: 1.2;
+  --fs-h2: 48px;   --lh-h2: 1.5;
+  --fs-h3: 40px;   --lh-h3: 1.5;
+  --fs-h4: 36px;   --lh-h4: 1.5;
+  --fs-h5: 24px;   --lh-h5: 1.5;
+  --fs-h6: 20px;   --lh-h6: 1.5;
+  --fs-h7: 20px;   --lh-h7: 1.5;
+
+  /* Body */
+  --fs-body-xl: 18px; --lh-body-xl: 1.5;
+  --fs-body-lg: 16px; --lh-body-lg: 1.5;
+  --fs-body-md: 14px; --lh-body-md: 1.5;
+  --fs-body-sm: 12px; --lh-body-sm: 1.5;
+
+  /* Title / label micros */
+  --fs-title-md: 14px;
+  --fs-title-sm: 12px;
+  --fs-title-xs: 10px;
+
+  /* ────────── SPACING (4px base) ────────── */
+  --space-0: 0;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 10px;
+  --space-6: 12px;
+  --space-7: 16px;
+  --space-8: 20px;
+  --space-9: 24px;
+  --space-10: 28px;
+  --space-11: 32px;
+  --space-12: 40px;
+  --space-13: 48px;
+  --space-14: 64px;
+  --space-15: 80px;
+  --space-16: 96px;
+  --space-17: 128px;
+  --space-18: 160px;
+  --space-19: 192px;
+  --space-20: 224px;
+  --space-21: 256px;
+
+  /* ────────── RADII ────────── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;   /* buttons */
+  --radius-xl: 16px;   /* modals */
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
+
+  /* ────────── SHADOWS ────────── */
+  --shadow-sm:  0px 1px 1px 0px rgba(16,24,40,0.15);
+  --shadow-md:  0px 2px 4px 0px rgba(16,24,40,0.08), 0px 1px 2px 0px rgba(16,24,40,0.06);
+  --shadow-lg:  0px 8px 16px 0px rgba(16,24,40,0.08), 0px 2px 4px 0px rgba(16,24,40,0.06);
+  --shadow-xl:  0px 12px 24px 0px rgba(16,24,40,0.12);
+  --shadow-2xl: 0px 20px 40px 0px rgba(16,24,40,0.16);
+  --shadow-3xl: 0px 32px 64px 0px rgba(16,24,40,0.20);
+
+  /* Focus ring */
+  --ring-brand: 0 0 0 1px var(--color-primary-500), 0 0 0 4px rgba(92,198,145,0.15);
+
+  /* ────────── MOTION ────────── */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+}
+
+/* ───────── Semantic typography utility classes ───────── */
+
+html {
+  font-family: var(--font-sans);
+  color: var(--color-fg);
+  background: var(--color-bg-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, .h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: -0.01em; color: var(--color-fg); margin: 0; }
+h2, .h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-h2); line-height: var(--lh-h2); color: var(--color-fg); margin: 0; }
+h3, .h3 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-h3); line-height: var(--lh-h3); color: var(--color-fg); margin: 0; }
+h4, .h4 { font-weight: 600; font-size: var(--fs-h4); line-height: var(--lh-h4); margin: 0; }
+h5, .h5 { font-weight: 600; font-size: var(--fs-h5); line-height: var(--lh-h5); margin: 0; }
+h6, .h6 { font-weight: 600; font-size: var(--fs-h6); line-height: var(--lh-h6); margin: 0; }
+
+p, .body-md { font-size: var(--fs-body-md); line-height: 1.5; color: var(--color-fg-secondary); margin: 0; }
+.body-xl { font-size: var(--fs-body-xl); line-height: 1.5; }
+.body-lg { font-size: var(--fs-body-lg); line-height: 1.5; }
+.body-sm { font-size: var(--fs-body-sm); line-height: 1.5; color: var(--color-fg-muted); }
+
+.label   { font-weight: 600; font-size: var(--fs-title-md); color: var(--color-fg); }
+.label-sm{ font-weight: 600; font-size: var(--fs-title-sm); color: var(--color-fg); }
+.muted   { color: var(--color-fg-muted); }
+
+code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+
+* { box-sizing: border-box; }

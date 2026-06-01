@@ -4,9 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/auth/presentation/login/src.dart';
 import '../../features/auth/presentation/register/src.dart';
 import '../../features/auth/presentation/splash/src.dart';
+import '../../features/follows/presentation/cubit/follow_cubit.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/teachers/presentation/teacher_profile_page.dart';
 import '../../features/teachers/presentation/teacher_profile_view_model.dart';
+import '../../features/exercises/presentation/exercise_page.dart';
+import '../../features/topics/presentation/create_topic/create_topic_page.dart';
+import '../../features/topics/presentation/create_topic/create_topic_view_model.dart';
 import '../../features/topics/presentation/topic_detail_page.dart';
 import '../../features/topics/presentation/topic_detail_view_model.dart';
 import '../base/base_view_model.dart';
@@ -20,6 +24,8 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String teacherProfile = '/teacher-profile';
   static const String topicDetail = '/topic-detail';
+  static const String createTopic = '/create-topic';
+  static const String exerciseSession = '/exercise-session';
 }
 
 class AppRouter {
@@ -35,7 +41,13 @@ class AppRouter {
         return _vmRoute(settings, sl<RegisterViewModel>(), const RegisterPage());
 
       case AppRoutes.home:
-        return _route((_) => const HomePage(), settings);
+        return _route(
+          (_) => BlocProvider(
+            create: (_) => sl<FollowCubit>()..load(),
+            child: const HomePage(),
+          ),
+          settings,
+        );
 
       case AppRoutes.teacherProfile:
         return _vmRoute(
@@ -50,6 +62,16 @@ class AppRouter {
           sl<TopicDetailViewModel>(),
           const TopicDetailPage(),
         );
+
+      case AppRoutes.createTopic:
+        return _vmRoute(
+          settings,
+          sl<CreateTopicViewModel>(),
+          const CreateTopicPage(),
+        );
+
+      case AppRoutes.exerciseSession:
+        return _route((_) => const ExercisePage(), settings);
 
       default:
         return _route((_) => const _NotFoundPage(), settings);

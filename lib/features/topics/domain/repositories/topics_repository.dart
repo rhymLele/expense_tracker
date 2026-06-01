@@ -12,6 +12,13 @@ abstract class TopicsRepository {
     int limit = 20,
   });
 
+  Future<Result<TopicEntity>> createTopic({
+    required String type,
+    required String title,
+    String? description,
+    String? visibility,
+  });
+
   Future<Result<void>> toggleLike(String topicId);
 
   Future<Result<List<TopicCommentEntity>>> getComments(String topicId);

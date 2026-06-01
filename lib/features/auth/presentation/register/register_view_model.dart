@@ -17,12 +17,15 @@ class RegisterViewModel extends BaseViewModel<RegisterBloc> {
     bloc.add(const RegisterStarted());
   }
 
+  void selectRole(String role) => bloc.add(RegisterRoleChanged(role));
+
   void submit() {
     if (!formKey.currentState!.validate()) return;
     bloc.add(RegisterSubmitted(
       name: nameController.text.trim(),
       email: emailController.text.trim(),
       password: passwordController.text,
+      role: bloc.state.selectedRole,
     ));
   }
 

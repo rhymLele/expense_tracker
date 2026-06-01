@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
 import '../../../../core/constants/text_styles.dart';
+import '../../../feed/presentation/widgets/topic_card.dart';
 import '../../domain/entities/teacher_profile_entity.dart';
 
 class TeacherCard extends StatelessWidget {
@@ -74,8 +75,8 @@ class TeacherCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
-                color: AppColors.textHint, size: AppSizes.iconMd),
+            const SizedBox(width: AppSizes.paddingSm),
+            FollowButton(teacherId: teacher.userId, compact: true),
           ],
         ),
       ),

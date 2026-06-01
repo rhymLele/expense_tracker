@@ -7,6 +7,7 @@ class RegisterState extends Equatable {
   final RegisterStatus status;
   final bool obscurePassword;
   final bool obscureConfirmPassword;
+  final String selectedRole;
   final String? errorMessage;
   final UserEntity? user;
 
@@ -14,6 +15,7 @@ class RegisterState extends Equatable {
     this.status = RegisterStatus.initial,
     this.obscurePassword = true,
     this.obscureConfirmPassword = true,
+    this.selectedRole = 'student',
     this.errorMessage,
     this.user,
   });
@@ -26,6 +28,7 @@ class RegisterState extends Equatable {
     RegisterStatus? status,
     bool? obscurePassword,
     bool? obscureConfirmPassword,
+    String? selectedRole,
     String? errorMessage,
     UserEntity? user,
   }) =>
@@ -34,6 +37,7 @@ class RegisterState extends Equatable {
         obscurePassword: obscurePassword ?? this.obscurePassword,
         obscureConfirmPassword:
             obscureConfirmPassword ?? this.obscureConfirmPassword,
+        selectedRole: selectedRole ?? this.selectedRole,
         errorMessage: errorMessage,
         user: user ?? this.user,
       );
@@ -43,6 +47,7 @@ class RegisterState extends Equatable {
         status,
         obscurePassword,
         obscureConfirmPassword,
+        selectedRole,
         errorMessage,
         user,
       ];

@@ -159,6 +159,11 @@ class _DiscoverContentState extends State<_DiscoverContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Khám phá', style: AppTextStyles.headlineLarge),
+          const SizedBox(height: AppSizes.paddingXs),
+          const Text(
+            'Theo dõi giáo viên để xem bài đăng của họ trên Feed',
+            style: AppTextStyles.bodySmall,
+          ),
           const SizedBox(height: AppSizes.paddingMd),
           TextField(
             controller: _searchController,

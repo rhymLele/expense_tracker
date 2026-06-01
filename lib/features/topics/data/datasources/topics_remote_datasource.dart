@@ -10,6 +10,12 @@ abstract class TopicsRemoteDataSource {
   Future<TopicModel> getTopic(String id);
   Future<PaginatedResult<TopicModel>> getTopicsByTeacher(String teacherId,
       {int page, int limit});
+  Future<TopicModel> createTopic({
+    required String type,
+    required String title,
+    String? description,
+    String? visibility,
+  });
   Future<void> toggleLike(String topicId);
   Future<List<TopicCommentModel>> getComments(String topicId);
   Future<TopicCommentModel> addComment({
@@ -39,6 +45,26 @@ class TopicsRemoteDataSourceImpl extends BaseRemoteDataSource
       queryParameters: {'page': page, 'limit': limit},
     );
     return ApiResponseMapper.paginated(res, TopicModel.fromJson);
+  }
+
+  @override
+  Future<TopicModel> createTopic({
+    required String type,
+    required String title,
+    String? description,
+    String? visibility,
+  }) async {
+    final res = await baseSendRequest(
+      ApiConstants.topics,
+      HttpMethod.post,
+      data: {
+        'type': type,
+        'title': title,
+        if (description != null) 'description': description,
+        if (visibility != null) 'visibility': visibility,
+      },
+    );
+    return ApiResponseMapper.single(res, TopicModel.fromJson);
   }
 
   @override

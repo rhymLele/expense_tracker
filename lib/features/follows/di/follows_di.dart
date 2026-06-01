@@ -8,6 +8,7 @@ import '../domain/usecases/follow_teacher_usecase.dart';
 import '../domain/usecases/get_followers_usecase.dart';
 import '../domain/usecases/get_following_usecase.dart';
 import '../domain/usecases/unfollow_teacher_usecase.dart';
+import '../presentation/cubit/follow_cubit.dart';
 
 class FollowsDI extends BaseFeatureDI {
   @override
@@ -30,5 +31,16 @@ class FollowsDI extends BaseFeatureDI {
     sl.registerLazySingleton(() => UnfollowTeacherUseCase(sl()));
     sl.registerLazySingleton(() => GetFollowingUseCase(sl()));
     sl.registerLazySingleton(() => GetFollowersUseCase(sl()));
+  }
+
+  @override
+  void blocs(GetIt sl) {
+    sl.registerFactory(
+      () => FollowCubit(
+        getFollowing: sl(),
+        follow: sl(),
+        unfollow: sl(),
+      ),
+    );
   }
 }

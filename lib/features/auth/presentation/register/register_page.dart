@@ -82,6 +82,11 @@ class RegisterPage extends StatelessWidget {
                   _PasswordField(vm: vm, state: state),
                   const SizedBox(height: AppSizes.paddingLg),
                   _ConfirmPasswordField(vm: vm, state: state),
+                  const SizedBox(height: AppSizes.paddingLg),
+                  _RoleSelector(
+                    selected: state.selectedRole,
+                    onChanged: vm.selectRole,
+                  ),
                   const SizedBox(height: AppSizes.xxxl),
                   _SubmitButton(onPressed: vm.submit, isLoading: state.isLoading),
                   const SizedBox(height: AppSizes.paddingLg),
@@ -215,6 +220,96 @@ class _SubmitButton extends StatelessWidget {
                 ),
               ),
       );
+}
+
+class _RoleSelector extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onChanged;
+  const _RoleSelector({required this.selected, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Bạn là', style: AppTextStyles.labelMedium),
+        const SizedBox(height: AppSizes.paddingSm),
+        Row(
+          children: [
+            Expanded(child: _RoleOption(
+              label: 'Học viên',
+              icon: Icons.school_outlined,
+              value: 'student',
+              selected: selected,
+              onTap: onChanged,
+            )),
+            const SizedBox(width: AppSizes.paddingMd),
+            Expanded(child: _RoleOption(
+              label: 'Giáo viên',
+              icon: Icons.cast_for_education_outlined,
+              value: 'teacher',
+              selected: selected,
+              onTap: onChanged,
+            )),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _RoleOption extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final String value;
+  final String selected;
+  final ValueChanged<String> onTap;
+  const _RoleOption({
+    required this.label,
+    required this.icon,
+    required this.value,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = value == selected;
+    return GestureDetector(
+      onTap: () => onTap(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSizes.paddingMd,
+          horizontal: AppSizes.paddingSm,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary.withOpacity(0.08) : AppColors.surface,
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.divider,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon,
+                color: isSelected ? AppColors.primary : AppColors.textHint,
+                size: 20),
+            const SizedBox(width: AppSizes.paddingXs),
+            Text(
+              label,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _LoginLink extends StatelessWidget {

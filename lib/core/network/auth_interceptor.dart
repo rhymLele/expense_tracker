@@ -19,14 +19,24 @@ class AuthInterceptor extends Interceptor {
     _refreshDio = Dio(BaseOptions(baseUrl: ApiConstants.baseUrl));
   }
 
+  static const _publicPaths = {
+    ApiConstants.login,
+    ApiConstants.register,
+    ApiConstants.refresh,
+    ApiConstants.exerciseTemplates,
+    ApiConstants.topicTemplates,
+  };
+
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _tokenStorage.getAccessToken();
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
+    if (!_publicPaths.contains(options.path)) {
+      final token = await _tokenStorage.getAccessToken();
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
     }
     handler.next(options);
   }

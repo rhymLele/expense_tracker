@@ -11,6 +11,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         super(const RegisterState()) {
     on<RegisterStarted>(_onStarted);
     on<RegisterSubmitted>(_onSubmitted);
+    on<RegisterRoleChanged>(_onRoleChanged);
     on<RegisterPasswordVisibilityToggled>(_onPasswordToggled);
     on<RegisterConfirmPasswordVisibilityToggled>(_onConfirmPasswordToggled);
     on<RegisterErrorDismissed>(_onErrorDismissed);
@@ -44,6 +45,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(state.copyWith(status: RegisterStatus.initial));
   }
 
+  void _onRoleChanged(RegisterRoleChanged event, Emitter<RegisterState> emit) {
+    emit(state.copyWith(selectedRole: event.role));
+  }
+
   Future<void> _onSubmitted(
     RegisterSubmitted event,
     Emitter<RegisterState> emit,
@@ -54,6 +59,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       email: event.email,
       password: event.password,
       name: event.name,
+      role: event.role,
     );
 
     result.fold(

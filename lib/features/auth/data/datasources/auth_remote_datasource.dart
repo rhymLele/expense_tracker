@@ -11,6 +11,7 @@ abstract class AuthRemoteDataSource {
     required String email,
     required String password,
     required String name,
+    required String role,
   });
   Future<void> logout();
   Future<UserModel?> getCurrentUser();
@@ -42,11 +43,12 @@ class AuthRemoteDataSourceImpl extends BaseRemoteDataSource
     required String email,
     required String password,
     required String name,
+    required String role,
   }) async {
     final res = await baseSendRequest(
       ApiConstants.register,
       HttpMethod.post,
-      data: {'email': email, 'password': password, 'name': name},
+      data: {'email': email, 'password': password, 'name': name, 'role': role},
     );
     await _saveTokens(res['data'] as Map<String, dynamic>);
     return _fetchMe();

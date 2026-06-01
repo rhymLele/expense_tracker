@@ -11,6 +11,9 @@ class TopicEntity extends Equatable {
   final int likeCount;
   final int commentCount;
   final DateTime createdAt;
+  // Author display info — populated from nested teacher/author object
+  final String? authorName;
+  final String? authorAvatarUrl;
 
   const TopicEntity({
     required this.id,
@@ -23,8 +26,13 @@ class TopicEntity extends Equatable {
     required this.likeCount,
     required this.commentCount,
     required this.createdAt,
+    this.authorName,
+    this.authorAvatarUrl,
   });
 
   @override
-  List<Object?> get props => [id, teacherId, type, visibility, title, likeCount, commentCount, createdAt];
+  List<Object?> get props => [
+        id, teacherId, type, visibility, title,
+        likeCount, commentCount, createdAt,
+      ];
 }

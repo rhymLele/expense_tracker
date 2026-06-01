@@ -39,6 +39,27 @@ class TopicsRepositoryImpl implements TopicsRepository {
   }
 
   @override
+  Future<Result<TopicEntity>> createTopic({
+    required String type,
+    required String title,
+    String? description,
+    String? visibility,
+  }) async {
+    try {
+      return Result.success(await _dataSource.createTopic(
+        type: type,
+        title: title,
+        description: description,
+        visibility: visibility,
+      ));
+    } on AppException catch (e) {
+      return Result.failure(e.toFailure());
+    } catch (e) {
+      return Result.failure(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Result<void>> toggleLike(String topicId) async {
     try {
       await _dataSource.toggleLike(topicId);

@@ -151,6 +151,12 @@ class _TeacherAppBar extends StatelessWidget {
         ),
       ),
       actions: [
+        // Message button
+        IconButton(
+          icon: const Icon(Icons.chat_bubble_outline, size: 20),
+          tooltip: 'Nhắn tin',
+          onPressed: () => _showMessageDialog(context, name),
+        ),
         Padding(
           padding: const EdgeInsets.only(right: AppSizes.paddingMd),
           child: isFollowLoading
@@ -184,6 +190,60 @@ class _TeacherAppBar extends StatelessWidget {
       ],
     );
   }
+}
+
+void _showMessageDialog(BuildContext context, String teacherName) {
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: AppColors.background,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.radiusLg)),
+    ),
+    builder: (_) => Padding(
+      padding: EdgeInsets.only(
+        left: AppSizes.paddingLg,
+        right: AppSizes.paddingLg,
+        top: AppSizes.paddingLg,
+        bottom: AppSizes.paddingLg + MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.divider,
+                borderRadius: BorderRadius.circular(AppSizes.radiusFull),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingMd),
+          Text('Nhắn tin cho $teacherName', style: AppTextStyles.titleMedium),
+          const SizedBox(height: AppSizes.paddingXs),
+          const Text(
+            'Tính năng chat đang được phát triển.\nBạn sẽ sớm có thể nhắn tin trực tiếp!',
+            style: AppTextStyles.bodySmall,
+          ),
+          const SizedBox(height: AppSizes.paddingLg),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.background,
+                elevation: 0,
+              ),
+              child: const Text('Đã hiểu'),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _ErrorBody extends StatelessWidget {

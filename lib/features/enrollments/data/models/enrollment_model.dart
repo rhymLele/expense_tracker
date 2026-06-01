@@ -1,52 +1,102 @@
-import '../../../journeys/data/models/journey_day_model.dart';
+import 'dart:developer' as dev;
+
 import '../../domain/entities/enrollment_entity.dart';
-import '../../domain/entities/today_tasks_entity.dart';
+import '../../domain/entities/today_task_entity.dart';
 
 class EnrollmentModel extends EnrollmentEntity {
   const EnrollmentModel({
     required super.id,
     required super.userId,
-    required super.journeyId,
+    required super.roadmapId,
     required super.currentDay,
     required super.streak,
-    required super.freezeTokensLeft,
     super.lastCompletedDate,
     super.completedAt,
     required super.journeyTitle,
     required super.journeyTotalDays,
+    super.status,
+    super.todayTasks,
+    super.dayTitles,
   });
 
   factory EnrollmentModel.fromJson(Map<String, dynamic> json) {
-    final journey = json['journey'] as Map<String, dynamic>? ?? {};
-    return EnrollmentModel(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      journeyId: json['journeyId'] as String,
-      currentDay: json['currentDay'] as int? ?? 1,
-      streak: json['streak'] as int? ?? 0,
-      freezeTokensLeft: json['freezeTokensLeft'] as int? ?? 0,
-      lastCompletedDate: json['lastCompletedDate'] as String?,
-      completedAt:
-          json['completedAt'] != null ? DateTime.parse(json['completedAt'] as String) : null,
-      journeyTitle: journey['title'] as String? ?? '',
-      journeyTotalDays: journey['totalDays'] as int? ?? 0,
-    );
-  }
-}
+    try {
+      final nested =
+          (json['roadmap'] ?? json['journey']) as Map<String, dynamic>? ?? {};
 
-class TodayTasksModel extends TodayTasksEntity {
-  const TodayTasksModel({
-    required super.currentDay,
-    required super.day,
-    required super.submittedTaskIds,
-  });
+      final roadmapId =
+          _str(json['roadmapId']) ?? _str(json['journeyId']) ?? '';
 
-  factory TodayTasksModel.fromJson(Map<String, dynamic> json) {
-    final rawIds = json['submittedTaskIds'] as List? ?? [];
-    return TodayTasksModel(
-      currentDay: json['currentDay'] as int? ?? 1,
-      day: JourneyDayModel.fromJson(json['day'] as Map<String, dynamic>),
-      submittedTaskIds: rawIds.cast<String>(),
-    );
+      final currentDayIndex = json['currentDayIndex'] as int?;
+      final currentDay = currentDayIndex != null
+          ? currentDayIndex + 1
+          : (json['currentDay'] as int? ?? 1);
+
+      final title = _str(nested['title']) ?? '';
+      final totalDays =
+          (nested['limitTime'] as int?) ?? (nested['totalDays'] as int?) ?? 0;
+
+      // Parse days array from roadmap (present in getActive response)
+      final rawDays = nested['days'] as List? ?? [];
+      final dayTitles = rawDays
+          .map((d) => _str((d as Map<String, dynamic>)['title']) ?? '')
+          .toList();
+
+      // Today's tasks = roadmap.days[currentDayIndex].tasks
+      final todayIndex = currentDayIndex ?? (currentDay - 1);
+      List<TodayTaskEntity> todayTasks = [];
+      if (rawDays.isNotEmpty && todayIndex < rawDays.length) {
+        final todayDay = rawDays[todayIndex] as Map<String, dynamic>;
+        final rawTasks = todayDay['tasks'] as List? ?? [];
+        todayTasks = rawTasks.asMap().entries.map((e) {
+          final t = e.value as Map<String, dynamic>;
+          final meta = t['contentMetadata'] as Map<String, dynamic>? ?? {};
+          return TodayTaskEntity(
+            id: _str(t['id']) ?? '',
+            title: _str(meta['title']) ??
+                _str(meta['prompt']) ??
+                _str(t['taskType']) ??
+                'Bài tập ${e.key + 1}',
+            taskType: _str(t['taskType']) ?? 'quiz',
+            required: t['required'] as bool? ?? true,
+            order: t['order'] as int? ?? e.key,
+          );
+        }).toList();
+      }
+
+      return EnrollmentModel(
+        id: _str(json['id']) ?? '',
+        userId: _str(json['userId']) ?? '',
+        roadmapId: roadmapId,
+        currentDay: currentDay,
+        streak: json['streak'] as int? ?? 0,
+        lastCompletedDate: _str(json['lastCompletedDate']),
+        completedAt: json['completedAt'] != null
+            ? DateTime.tryParse(json['completedAt'].toString())
+            : null,
+        journeyTitle: title,
+        journeyTotalDays: totalDays,
+        status: _str(json['status']) ?? 'active',
+        todayTasks: todayTasks,
+        dayTitles: dayTitles,
+      );
+    } catch (e, st) {
+      dev.log(
+        'EnrollmentModel.fromJson error: $e\njson keys: ${json.keys.toList()}',
+        stackTrace: st,
+        name: 'Enrollment',
+      );
+      return EnrollmentModel(
+        id: _str(json['id']) ?? '',
+        userId: '',
+        roadmapId: '',
+        currentDay: 1,
+        streak: 0,
+        journeyTitle: 'Lộ trình',
+        journeyTotalDays: 0,
+      );
+    }
   }
+
+  static String? _str(dynamic v) => v == null ? null : v.toString();
 }

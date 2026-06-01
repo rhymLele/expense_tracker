@@ -104,8 +104,12 @@ class NetworkClient {
     }
     final statusCode = e.response?.statusCode ?? 0;
     final data = e.response?.data;
-    final reason =
-        (data is Map) ? (data['reason'] as String?) ?? 'Lỗi server' : 'Lỗi server';
+    final reason = (data is Map)
+        ? (data['reason'] as String?) ??
+            (data['message'] as String?) ??
+            (data['error'] as String?) ??
+            'Lỗi server'
+        : 'Lỗi server';
     return switch (statusCode) {
       401 => AuthException(code: 'unauthorized', message: reason),
       409 => ServerException(code: 'conflict', message: reason),

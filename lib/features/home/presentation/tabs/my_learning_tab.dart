@@ -6,10 +6,12 @@ import '../../../../core/constants/sizes.dart';
 import '../../../../core/constants/text_styles.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/widgets/skeletons/app_skeletons.dart';
+import '../../../enrollments/domain/entities/enrollment_entity.dart';
 import '../../../enrollments/presentation/bloc/enrollments_bloc.dart';
 import '../../../enrollments/presentation/bloc/enrollments_event.dart';
 import '../../../enrollments/presentation/bloc/enrollments_state.dart';
 import '../../../enrollments/presentation/widgets/enrollment_card.dart';
+import '../../../enrollments/presentation/widgets/focus_card.dart';
 
 class MyLearningTab extends StatelessWidget {
   const MyLearningTab({super.key});
@@ -45,6 +47,11 @@ class _MyLearningContent extends StatelessWidget {
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: _buildHeader()),
+              if (state.status == EnrollmentsStatus.success &&
+                  state.enrollments.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: _buildFocusCard(state.enrollments),
+                ),
               if (state.status == EnrollmentsStatus.loading)
                 const EnrollmentListSkeleton()
               else if (state.status == EnrollmentsStatus.failure)
@@ -100,7 +107,21 @@ class _MyLearningContent extends StatelessWidget {
                     ),
                   ),
                 )
-              else
+              else ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSizes.paddingLg,
+                      AppSizes.paddingSm,
+                      AppSizes.paddingLg,
+                      AppSizes.paddingXs,
+                    ),
+                    child: Text(
+                      'Tất cả hành trình',
+                      style: AppTextStyles.labelMedium,
+                    ),
+                  ),
+                ),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSizes.paddingLg,
@@ -111,6 +132,7 @@ class _MyLearningContent extends StatelessWidget {
                         EnrollmentCard(enrollment: state.enrollments[i]),
                   ),
                 ),
+              ],
               const SliverToBoxAdapter(
                 child: SizedBox(height: AppSizes.xxxl),
               ),
@@ -140,6 +162,17 @@ class _MyLearningContent extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFocusCard(List<EnrollmentEntity> enrollments) {
+    final active = enrollments.firstWhere(
+      (e) => e.completedAt == null,
+      orElse: () => enrollments.first,
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSizes.paddingMd),
+      child: FocusCard(enrollment: active),
     );
   }
 }

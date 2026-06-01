@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       // Mọi feature đều truy cập qua context.read<AuthBloc>()
       create: (_) => sl<AuthBloc>(),
       child: MaterialApp(
-        title: 'SAM',
+        title: 'LearnSpace',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
