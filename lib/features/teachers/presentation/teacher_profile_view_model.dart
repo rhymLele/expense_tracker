@@ -3,24 +3,22 @@ import '../domain/usecases/get_teacher_profile_usecase.dart';
 import '../../follows/domain/usecases/follow_teacher_usecase.dart';
 import '../../follows/domain/usecases/unfollow_teacher_usecase.dart';
 import '../../topics/domain/usecases/get_topics_by_teacher_usecase.dart';
-import 'bloc/teacher_profile_bloc.dart';
-import 'bloc/teacher_profile_event.dart';
+import 'bloc/teacher_profile_cubit.dart';
 
-class TeacherProfileViewModel extends BaseViewModel<TeacherProfileBloc> {
+class TeacherProfileViewModel extends BaseViewModel<TeacherProfileCubit> {
   TeacherProfileViewModel({
     required GetTeacherProfileUseCase getTeacherProfile,
     required GetTopicsByTeacherUseCase getTopicsByTeacher,
     required FollowTeacherUseCase follow,
     required UnfollowTeacherUseCase unfollow,
-  }) : super(TeacherProfileBloc(
+  }) : super(TeacherProfileCubit(
           getTeacherProfile: getTeacherProfile,
           getTopicsByTeacher: getTopicsByTeacher,
           follow: follow,
           unfollow: unfollow,
         ));
 
-  void load(String userId) =>
-      bloc.add(TeacherProfileLoadRequested(userId));
+  void load(String userId) => bloc.load(userId);
 
-  void toggleFollow() => bloc.add(const TeacherProfileFollowToggled());
+  void toggleFollow() => bloc.toggleFollow();
 }

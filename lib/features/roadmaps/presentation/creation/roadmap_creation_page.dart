@@ -4,8 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
 import '../../../../core/constants/text_styles.dart';
-import 'bloc/roadmap_creation_bloc.dart';
-import 'bloc/roadmap_creation_event.dart';
+import 'bloc/roadmap_creation_cubit.dart';
 import 'bloc/roadmap_creation_state.dart';
 import 'widgets/day_expansion_tile.dart';
 import 'widgets/publish_bar.dart';
@@ -16,7 +15,7 @@ class RoadmapCreationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => RoadmapCreationBloc()..add(const RoadmapInitialized()),
+      create: (_) => RoadmapCreationCubit()..initialize(),
       child: const _RoadmapCreationContent(),
     );
   }
@@ -27,8 +26,9 @@ class _RoadmapCreationContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<RoadmapCreationBloc, RoadmapCreationState>(
-      listenWhen: (p, c) => p.status != c.status,
+    return BlocListener<RoadmapCreationCubit, RoadmapCreationState>(
+      listenWhen: (p, c) =>
+          p.status != c.status || p.validationMessage != c.validationMessage,
       listener: (context, state) {
         if (state.status == RoadmapCreationStatus.success) {
           Navigator.pop(context, true);
@@ -64,7 +64,7 @@ class _RoadmapCreationContent extends StatelessWidget {
       ),
       title: const Text('Tạo lộ trình', style: AppTextStyles.titleLarge),
       actions: [
-        BlocBuilder<RoadmapCreationBloc, RoadmapCreationState>(
+        BlocBuilder<RoadmapCreationCubit, RoadmapCreationState>(
           buildWhen: (p, c) =>
               p.isPublishable != c.isPublishable || p.status != c.status,
           builder: (context, state) {
@@ -81,8 +81,8 @@ class _RoadmapCreationContent extends StatelessWidget {
                     )
                   : TextButton(
                       onPressed: () => context
-                          .read<RoadmapCreationBloc>()
-                          .add(const RoadmapPublishRequested()),
+                          .read<RoadmapCreationCubit>()
+                          .publish(),
                       child: Text(
                         'Đăng',
                         style: AppTextStyles.titleSmall.copyWith(
@@ -124,12 +124,12 @@ class _Body extends StatelessWidget {
         // 5. Day-by-day content header
         const SliverToBoxAdapter(child: _DaySectionHeader()),
         // 6. Day tiles
-        BlocBuilder<RoadmapCreationBloc, RoadmapCreationState>(
+        BlocBuilder<RoadmapCreationCubit, RoadmapCreationState>(
           builder: (context, state) {
             return SliverList.builder(
               itemCount: state.days.length,
               itemBuilder: (ctx, i) => RepaintBoundary(
-                child: BlocSelector<RoadmapCreationBloc, RoadmapCreationState,
+                child: BlocSelector<RoadmapCreationCubit, RoadmapCreationState,
                     RoadmapDayDraft>(
                   selector: (s) =>
                       s.days.length > i ? s.days[i] : const RoadmapDayDraft(),
@@ -155,7 +155,7 @@ class _PreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<RoadmapCreationBloc, RoadmapCreationState,
+    return BlocSelector<RoadmapCreationCubit, RoadmapCreationState,
         _PreviewData>(
       selector: (s) => _PreviewData(
         title: s.title,
@@ -335,7 +335,7 @@ class _CoverSection extends StatelessWidget {
         children: [
           const Text('Màu bìa', style: AppTextStyles.labelLarge),
           const SizedBox(height: 12),
-          BlocSelector<RoadmapCreationBloc, RoadmapCreationState, Color>(
+          BlocSelector<RoadmapCreationCubit, RoadmapCreationState, Color>(
             selector: (s) => s.coverColor,
             builder: (context, selectedColor) => Row(
               children: [
@@ -346,8 +346,8 @@ class _CoverSection extends StatelessWidget {
                         color: c,
                         selected: selectedColor == c,
                         onTap: () => context
-                            .read<RoadmapCreationBloc>()
-                            .add(RoadmapCoverColorChanged(c)),
+                            .read<RoadmapCreationCubit>()
+                            .changeCoverColor(c),
                       ),
                     )),
                 // Image picker button
@@ -461,8 +461,8 @@ class _TitleDescSectionState extends State<_TitleDescSection> {
             controller: _titleCtrl,
             maxLength: 70,
             onChanged: (v) => context
-                .read<RoadmapCreationBloc>()
-                .add(RoadmapTitleChanged(v)),
+                .read<RoadmapCreationCubit>()
+                .changeTitle(v),
             style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textPrimary, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
@@ -497,8 +497,8 @@ class _TitleDescSectionState extends State<_TitleDescSection> {
             controller: _descCtrl,
             maxLines: 4,
             onChanged: (v) => context
-                .read<RoadmapCreationBloc>()
-                .add(RoadmapDescriptionChanged(v)),
+                .read<RoadmapCreationCubit>()
+                .changeDescription(v),
             style: AppTextStyles.bodyMedium
                 .copyWith(color: AppColors.textPrimary),
             decoration: InputDecoration(
@@ -550,7 +550,7 @@ class _SubjectSection extends StatelessWidget {
     return Container(
       color: AppColors.background,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-      child: BlocBuilder<RoadmapCreationBloc, RoadmapCreationState>(
+      child: BlocBuilder<RoadmapCreationCubit, RoadmapCreationState>(
         buildWhen: (p, c) => p.subject != c.subject || p.level != c.level,
         builder: (context, state) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -566,8 +566,8 @@ class _SubjectSection extends StatelessWidget {
                         label: s,
                         selected: state.subject == s,
                         onTap: () => context
-                            .read<RoadmapCreationBloc>()
-                            .add(RoadmapSubjectChanged(s)),
+                            .read<RoadmapCreationCubit>()
+                            .changeSubject(s),
                       ))
                   .toList(),
             ),
@@ -583,8 +583,8 @@ class _SubjectSection extends StatelessWidget {
                           label: l.$2,
                           selected: state.level == l.$1,
                           onTap: () => context
-                              .read<RoadmapCreationBloc>()
-                              .add(RoadmapLevelChanged(l.$1)),
+                              .read<RoadmapCreationCubit>()
+                              .changeLevel(l.$1),
                         ),
                       ))
                   .toList(),
@@ -640,7 +640,7 @@ class _DaySectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<RoadmapCreationBloc, RoadmapCreationState,
+    return BlocSelector<RoadmapCreationCubit, RoadmapCreationState,
         (int, int)>(
       selector: (s) => (s.days.length, s.totalTaskCount),
       builder: (_, data) => Padding(
@@ -670,7 +670,7 @@ class _AddDayButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () =>
-          context.read<RoadmapCreationBloc>().add(const RoadmapDayAdded()),
+          context.read<RoadmapCreationCubit>().addDay(),
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
         padding: const EdgeInsets.symmetric(vertical: 16),

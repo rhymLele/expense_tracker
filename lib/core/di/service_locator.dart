@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 
 import '../../features/auth/di/auth_di.dart';
+import '../../features/chat/di/chat_di.dart';
 import '../../features/enrollments/di/enrollments_di.dart';
 import '../../features/exercises/di/exercises_di.dart';
 import '../../features/feed/di/feed_di.dart';
@@ -36,6 +37,7 @@ void _registerFeatures() {
     JourneysDI(),
     EnrollmentsDI(),
     SubmissionsDI(),
+    ChatDI(),
   ];
   for (final feature in features) {
     feature.register(sl);

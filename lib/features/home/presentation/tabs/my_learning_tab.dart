@@ -7,8 +7,7 @@ import '../../../../core/constants/text_styles.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/widgets/skeletons/app_skeletons.dart';
 import '../../../enrollments/domain/entities/enrollment_entity.dart';
-import '../../../enrollments/presentation/bloc/enrollments_bloc.dart';
-import '../../../enrollments/presentation/bloc/enrollments_event.dart';
+import '../../../enrollments/presentation/bloc/enrollments_cubit.dart';
 import '../../../enrollments/presentation/bloc/enrollments_state.dart';
 import '../../../enrollments/presentation/widgets/enrollment_card.dart';
 import '../../../enrollments/presentation/widgets/focus_card.dart';
@@ -20,7 +19,7 @@ class MyLearningTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
-          sl<EnrollmentsBloc>()..add(const EnrollmentsLoadRequested()),
+          sl<EnrollmentsCubit>()..load(),
       child: const _MyLearningContent(),
     );
   }
@@ -31,16 +30,16 @@ class _MyLearningContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<EnrollmentsBloc, EnrollmentsState>(
+    return BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
       builder: (context, state) {
         return RefreshIndicator(
           color: AppColors.primary,
           onRefresh: () async {
             context
-                .read<EnrollmentsBloc>()
-                .add(const EnrollmentsRefreshRequested());
+                .read<EnrollmentsCubit>()
+                .refresh();
             await context
-                .read<EnrollmentsBloc>()
+                .read<EnrollmentsCubit>()
                 .stream
                 .firstWhere((s) => s.status != EnrollmentsStatus.loading);
           },
@@ -75,8 +74,8 @@ class _MyLearningContent extends StatelessWidget {
                           const SizedBox(height: AppSizes.paddingLg),
                           TextButton(
                             onPressed: () => context
-                                .read<EnrollmentsBloc>()
-                                .add(const EnrollmentsLoadRequested()),
+                                .read<EnrollmentsCubit>()
+                                .load(),
                             child: const Text('Thử lại'),
                           ),
                         ],

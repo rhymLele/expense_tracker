@@ -5,7 +5,7 @@ import '../data/datasources/feed_remote_datasource.dart';
 import '../data/repositories/feed_repository_impl.dart';
 import '../domain/repositories/feed_repository.dart';
 import '../domain/usecases/get_feed_usecase.dart';
-import '../presentation/bloc/feed_bloc.dart';
+import '../presentation/bloc/feed_cubit.dart';
 
 class FeedDI extends BaseFeatureDI {
   @override
@@ -29,6 +29,6 @@ class FeedDI extends BaseFeatureDI {
 
   @override
   void blocs(GetIt sl) {
-    sl.registerFactory(() => FeedBloc(getFeedUseCase: sl()));
+    sl.registerFactory(() => FeedCubit(getFeedUseCase: sl()));
   }
 }

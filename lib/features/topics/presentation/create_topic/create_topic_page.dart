@@ -7,9 +7,9 @@ import '../../../../core/constants/text_styles.dart';
 import '../../../../core/widgets/base_button.dart';
 import '../../../../core/widgets/base_loading.dart';
 import '../../../../core/widgets/base_text_field.dart';
-import '../../../auth/presentation/shared/auth_bloc.dart';
+import '../../../auth/presentation/shared/auth_cubit.dart';
 import '../../../auth/presentation/shared/auth_state.dart';
-import 'bloc/create_topic_bloc.dart';
+import 'bloc/create_topic_cubit.dart';
 import 'bloc/create_topic_state.dart';
 import 'create_topic_view_model.dart';
 
@@ -19,10 +19,10 @@ class CreateTopicPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.read<CreateTopicViewModel>();
-    final authState = context.read<AuthBloc>().state;
+    final authState = context.read<AuthCubit>().state;
     final userRole = authState is AuthAuthenticated ? authState.user.role : 'student';
 
-    return BlocConsumer<CreateTopicBloc, CreateTopicState>(
+    return BlocConsumer<CreateTopicCubit, CreateTopicState>(
       listenWhen: (prev, curr) => prev.status != curr.status,
       listener: (ctx, state) {
         if (state.isSuccess) {

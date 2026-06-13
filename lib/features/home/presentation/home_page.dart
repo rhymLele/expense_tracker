@@ -6,10 +6,9 @@ import '../../../core/constants/sizes.dart';
 import '../../../core/constants/text_styles.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/router/app_router.dart';
-import '../../auth/presentation/shared/auth_bloc.dart';
+import '../../auth/presentation/shared/auth_cubit.dart';
 import '../../auth/presentation/shared/auth_state.dart';
-import '../../feed/presentation/bloc/feed_bloc.dart';
-import '../../feed/presentation/bloc/feed_event.dart';
+import '../../feed/presentation/bloc/feed_cubit.dart';
 import '../../roadmaps/presentation/creation/roadmap_creation_page.dart';
 import 'tabs/chat_tab.dart';
 import 'tabs/feed_tab.dart';
@@ -25,13 +24,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  late final FeedBloc _feedBloc;
+  late final FeedCubit _feedBloc;
   late final List<Widget> _tabs;
 
   @override
   void initState() {
     super.initState();
-    _feedBloc = sl<FeedBloc>()..add(const FeedLoadRequested());
+    _feedBloc = sl<FeedCubit>()..load();
     _tabs = [
       FeedTab(bloc: _feedBloc),
       const RoadmapTab(),
@@ -62,7 +61,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget? _buildFab(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
+    final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) return null;
 
     return FloatingActionButton(
@@ -91,7 +90,7 @@ class _HomePageState extends State<HomePage> {
             AppRoutes.createTopic,
           );
           if (created == true) {
-            _feedBloc.add(const FeedRefreshRequested());
+            _feedBloc.refresh();
           }
         },
         onJourneyTap: () async {

@@ -77,9 +77,10 @@ class ApiConstants {
   static String voteRoadmap(String id) => '/votes/roadmaps/$id';
   static String myVote(String id) => '/votes/roadmaps/$id/my';
 
-  // Messages
-  static const String conversations = '/conversations';
-  static String conversationMessages(String id) => '/conversations/$id/messages';
+  // Messages / Chat
+  static const String myConversations = '/messages/conversations';
+  static const String startDirectConversation = '/messages/conversations/direct';
+  static String conversationMessages(String id) => '/messages/conversations/$id/messages';
 
   // Submissions
   static const String submissions = '/submissions';

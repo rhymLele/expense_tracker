@@ -4,8 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/constants/sizes.dart';
 import '../../../../../core/constants/text_styles.dart';
-import '../bloc/roadmap_creation_bloc.dart';
-import '../bloc/roadmap_creation_event.dart';
+import '../bloc/roadmap_creation_cubit.dart';
 import '../bloc/roadmap_creation_state.dart';
 
 class PublishBar extends StatelessWidget {
@@ -13,7 +12,7 @@ class PublishBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<RoadmapCreationBloc, RoadmapCreationState>(
+    return BlocBuilder<RoadmapCreationCubit, RoadmapCreationState>(
       builder: (context, state) {
         return Container(
           padding: EdgeInsets.fromLTRB(
@@ -71,8 +70,8 @@ class PublishBar extends StatelessWidget {
                   ElevatedButton(
                     onPressed: state.isPublishable
                         ? () => context
-                            .read<RoadmapCreationBloc>()
-                            .add(const RoadmapPublishRequested())
+                            .read<RoadmapCreationCubit>()
+                            .publish()
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,

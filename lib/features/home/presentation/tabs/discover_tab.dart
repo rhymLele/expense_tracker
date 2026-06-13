@@ -7,8 +7,7 @@ import '../../../../core/constants/text_styles.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/skeletons/app_skeletons.dart';
-import '../../../teachers/presentation/bloc/teachers_list_bloc.dart';
-import '../../../teachers/presentation/bloc/teachers_list_event.dart';
+import '../../../teachers/presentation/bloc/teachers_list_cubit.dart';
 import '../../../teachers/presentation/bloc/teachers_list_state.dart';
 import '../../../teachers/presentation/widgets/teacher_card.dart';
 import '../widgets/subject_filter_bar.dart';
@@ -20,7 +19,7 @@ class DiscoverTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
-          sl<TeachersListBloc>()..add(const TeachersListLoadRequested()),
+          sl<TeachersListCubit>()..load(),
       child: const _DiscoverContent(),
     );
   }
@@ -54,16 +53,16 @@ class _DiscoverContentState extends State<_DiscoverContent> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<TeachersListBloc, TeachersListState>(
+    return BlocBuilder<TeachersListCubit, TeachersListState>(
       builder: (context, state) {
         return RefreshIndicator(
           color: AppColors.primary,
           onRefresh: () async {
             context
-                .read<TeachersListBloc>()
-                .add(const TeachersListLoadRequested());
+                .read<TeachersListCubit>()
+                .load();
             await context
-                .read<TeachersListBloc>()
+                .read<TeachersListCubit>()
                 .stream
                 .firstWhere((s) => s.status != TeachersListStatus.loading);
           },
@@ -77,8 +76,8 @@ class _DiscoverContentState extends State<_DiscoverContent> {
                   onSelected: (subject) {
                     setState(() => _selectedSubject = subject);
                     context
-                        .read<TeachersListBloc>()
-                        .add(TeachersListSubjectFiltered(subject));
+                        .read<TeachersListCubit>()
+                        .filterBySubject(subject);
                   },
                 ),
               ),
@@ -117,8 +116,8 @@ class _DiscoverContentState extends State<_DiscoverContent> {
                     itemBuilder: (ctx, i) {
                       if (i == state.teachers.length) {
                         ctx
-                            .read<TeachersListBloc>()
-                            .add(const TeachersListLoadMoreRequested());
+                            .read<TeachersListCubit>()
+                            .loadMore();
                         return const Padding(
                           padding: EdgeInsets.symmetric(
                             vertical: AppSizes.paddingLg,
@@ -168,8 +167,8 @@ class _DiscoverContentState extends State<_DiscoverContent> {
           TextField(
             controller: _searchController,
             onChanged: (v) => context
-                .read<TeachersListBloc>()
-                .add(TeachersListSearchChanged(v)),
+                .read<TeachersListCubit>()
+                .search(v),
             decoration: InputDecoration(
               hintText: 'Tìm kiếm giáo viên...',
               hintStyle:
@@ -183,8 +182,8 @@ class _DiscoverContentState extends State<_DiscoverContent> {
                       onPressed: () {
                         _searchController.clear();
                         context
-                            .read<TeachersListBloc>()
-                            .add(const TeachersListSearchChanged(''));
+                            .read<TeachersListCubit>()
+                            .search('');
                       },
                     )
                   : null,

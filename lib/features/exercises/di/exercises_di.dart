@@ -6,9 +6,9 @@ import '../data/repositories/exercises_repository_impl.dart';
 import '../domain/repositories/exercises_repository.dart';
 import '../domain/usecases/get_exercise_usecase.dart';
 import '../domain/usecases/get_exercises_by_teacher_usecase.dart';
-import '../presentation/bloc/exercise_session_bloc.dart';
-import '../presentation/create_exercise/bloc/create_exercise_bloc.dart';
-import '../presentation/template_gallery/bloc/template_gallery_bloc.dart';
+import '../presentation/bloc/exercise_session_cubit.dart';
+import '../presentation/create_exercise/bloc/create_exercise_cubit.dart';
+import '../presentation/template_gallery/bloc/template_gallery_cubit.dart';
 
 class ExercisesDI extends BaseFeatureDI {
   @override
@@ -34,12 +34,12 @@ class ExercisesDI extends BaseFeatureDI {
   @override
   void blocs(GetIt sl) {
     sl.registerFactory(
-      () => ExerciseSessionBloc(
+      () => ExerciseSessionCubit(
         getTodayTasks: sl(),
         submitAnswer: sl(),
       ),
     );
-    sl.registerFactory(() => TemplateGalleryBloc(datasource: sl()));
-    sl.registerFactory(() => CreateExerciseBloc(datasource: sl()));
+    sl.registerFactory(() => TemplateGalleryCubit(datasource: sl()));
+    sl.registerFactory(() => CreateExerciseCubit(datasource: sl()));
   }
 }

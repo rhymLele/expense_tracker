@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/colors.dart';
-import 'roadmap_creation_event.dart';
+import 'roadmap_creation_models.dart';
 
 enum RoadmapCreationStatus { idle, saving, publishing, success, failure }
 

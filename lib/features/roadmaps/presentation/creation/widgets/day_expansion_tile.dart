@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/constants/sizes.dart';
 import '../../../../../core/constants/text_styles.dart';
-import '../bloc/roadmap_creation_bloc.dart';
-import '../bloc/roadmap_creation_event.dart';
+import '../bloc/roadmap_creation_cubit.dart';
+import '../bloc/roadmap_creation_models.dart';
 import '../bloc/roadmap_creation_state.dart';
 
 class DayExpansionTile extends StatefulWidget {
@@ -63,12 +63,12 @@ class _DayExpansionTileState extends State<DayExpansionTile> {
             dayIndex: widget.dayIndex,
             titleCtrl: _titleCtrl,
             onTitleChanged: (v) => context
-                .read<RoadmapCreationBloc>()
-                .add(DayTitleChanged(widget.dayIndex, v)),
+                .read<RoadmapCreationCubit>()
+                .changeDayTitle(widget.dayIndex, v),
             canRemove: true,
             onRemove: () => context
-                .read<RoadmapCreationBloc>()
-                .add(RoadmapDayRemoved(widget.dayIndex)),
+                .read<RoadmapCreationCubit>()
+                .removeDay(widget.dayIndex),
           ),
           // Tasks
           if (widget.day.tasks.isNotEmpty) ...[
@@ -92,11 +92,9 @@ class _DayExpansionTileState extends State<DayExpansionTile> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
             child: GestureDetector(
-              onTap: () => context.read<RoadmapCreationBloc>().add(
-                    TaskAddedToDay(
-                      widget.dayIndex,
-                      const RoadmapTaskDraft(),
-                    ),
+              onTap: () => context.read<RoadmapCreationCubit>().addTaskToDay(
+                    widget.dayIndex,
+                    const RoadmapTaskDraft(),
                   ),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -259,19 +257,16 @@ class _InlineTaskRowState extends State<_InlineTaskRow> {
           // Skill type dropdown
           _SkillDropdown(
             value: widget.task.type,
-            onChanged: (t) => context.read<RoadmapCreationBloc>().add(
-                  TaskTypeChanged(widget.dayIndex, widget.taskIndex, t),
-                ),
+            onChanged: (t) => context.read<RoadmapCreationCubit>().changeTaskType(
+                  widget.dayIndex, widget.taskIndex, t),
           ),
           const SizedBox(width: 8),
           // Description field
           Expanded(
             child: TextField(
               controller: _descCtrl,
-              onChanged: (v) => context.read<RoadmapCreationBloc>().add(
-                    TaskDescriptionChanged(
-                        widget.dayIndex, widget.taskIndex, v),
-                  ),
+              onChanged: (v) => context.read<RoadmapCreationCubit>()
+                    .changeTaskDescription(widget.dayIndex, widget.taskIndex, v),
               style: AppTextStyles.bodySmall
                   .copyWith(color: AppColors.textPrimary),
               decoration: InputDecoration(
@@ -308,10 +303,8 @@ class _InlineTaskRowState extends State<_InlineTaskRow> {
           IconButton(
             icon: const Icon(Icons.close,
                 size: 16, color: AppColors.textHint),
-            onPressed: () => context.read<RoadmapCreationBloc>().add(
-                  TaskRemovedFromDay(
-                      widget.dayIndex, widget.taskIndex),
-                ),
+            onPressed: () => context.read<RoadmapCreationCubit>()
+                  .removeTaskFromDay(widget.dayIndex, widget.taskIndex),
             padding: EdgeInsets.zero,
             constraints:
                 const BoxConstraints(minWidth: 28, minHeight: 28),

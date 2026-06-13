@@ -17,7 +17,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.read<LoginViewModel>();
-    return BlocConsumer<LoginBloc, LoginState>(
+    return BlocConsumer<LoginCubit, LoginState>(
       listenWhen: (prev, curr) => prev.status != curr.status,
       listener: (ctx, state) => _onStateChanged(ctx, state, vm),
       builder: (ctx, state) => _buildScaffold(ctx, state, vm),
@@ -26,7 +26,7 @@ class LoginPage extends StatelessWidget {
 
   void _onStateChanged(BuildContext ctx, LoginState state, LoginViewModel vm) {
     if (state.isSuccess && state.user != null) {
-      ctx.read<AuthBloc>().add(AuthLoginSucceeded(state.user!));
+      ctx.read<AuthCubit>().loginSucceeded(state.user!);
       Navigator.pushReplacementNamed(ctx, AppRoutes.home);
       return;
     }

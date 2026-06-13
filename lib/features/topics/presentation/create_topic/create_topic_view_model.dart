@@ -1,33 +1,31 @@
 import 'package:flutter/material.dart';
 import '../../../../core/base/base_view_model.dart';
 import '../../domain/usecases/create_topic_usecase.dart';
-import 'bloc/create_topic_bloc.dart';
-import 'bloc/create_topic_event.dart';
+import 'bloc/create_topic_cubit.dart';
 
-class CreateTopicViewModel extends BaseViewModel<CreateTopicBloc> {
+class CreateTopicViewModel extends BaseViewModel<CreateTopicCubit> {
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
   CreateTopicViewModel({required CreateTopicUseCase createTopic})
-      : super(CreateTopicBloc(createTopic: createTopic));
+      : super(CreateTopicCubit(createTopic: createTopic));
 
-  void selectType(String type) => bloc.add(CreateTopicTypeChanged(type));
+  void selectType(String type) => bloc.changeType(type);
 
-  void selectVisibility(String visibility) =>
-      bloc.add(CreateTopicVisibilityChanged(visibility));
+  void selectVisibility(String visibility) => bloc.changeVisibility(visibility);
 
   void submit() {
     if (!formKey.currentState!.validate()) return;
-    bloc.add(CreateTopicSubmitted(
+    bloc.submit(
       title: titleController.text.trim(),
       description: descriptionController.text.trim().isEmpty
           ? null
           : descriptionController.text.trim(),
-    ));
+    );
   }
 
-  void dismissError() => bloc.add(const CreateTopicErrorDismissed());
+  void dismissError() => bloc.dismissError();
 
   String? validateTitle(String? v) {
     if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tiêu đề';

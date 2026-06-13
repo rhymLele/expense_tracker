@@ -11,7 +11,7 @@ import '../domain/usecases/logout_usecase.dart';
 import '../domain/usecases/register_usecase.dart';
 import '../presentation/login/login_view_model.dart';
 import '../presentation/register/register_view_model.dart';
-import '../presentation/shared/auth_bloc.dart';
+import '../presentation/shared/auth_cubit.dart';
 
 class AuthDI extends BaseFeatureDI {
   @override
@@ -39,7 +39,7 @@ class AuthDI extends BaseFeatureDI {
   @override
   void blocs(GetIt sl) {
     sl.registerLazySingleton(
-      () => AuthBloc(
+      () => AuthCubit(
         logoutUseCase: sl(),
         getCurrentUserUseCase: sl(),
       ),

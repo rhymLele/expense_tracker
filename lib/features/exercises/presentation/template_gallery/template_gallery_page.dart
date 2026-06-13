@@ -8,8 +8,7 @@ import '../../../../core/di/service_locator.dart';
 import '../../../../core/widgets/base_loading.dart';
 import '../../domain/entities/exercise_template_entity.dart';
 import '../create_exercise/create_exercise_page.dart';
-import 'bloc/template_gallery_bloc.dart';
-import 'bloc/template_gallery_event.dart';
+import 'bloc/template_gallery_cubit.dart';
 import 'bloc/template_gallery_state.dart';
 
 class TemplateGalleryPage extends StatelessWidget {
@@ -18,8 +17,8 @@ class TemplateGalleryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => TemplateGalleryBloc(datasource: sl())
-        ..add(const TemplateGalleryLoadRequested()),
+      create: (_) => TemplateGalleryCubit(datasource: sl())
+        ..load(),
       child: const _TemplateGalleryContent(),
     );
   }
@@ -49,7 +48,7 @@ class _TemplateGalleryContent extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: BlocBuilder<TemplateGalleryBloc, TemplateGalleryState>(
+      body: BlocBuilder<TemplateGalleryCubit, TemplateGalleryState>(
         builder: (context, state) {
           if (state.status == TemplateGalleryStatus.loading) {
             return const Center(child: BaseLoading());
@@ -69,8 +68,8 @@ class _TemplateGalleryContent extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () => context
-                        .read<TemplateGalleryBloc>()
-                        .add(const TemplateGalleryLoadRequested()),
+                        .read<TemplateGalleryCubit>()
+                        .load(),
                     child: const Text('Thử lại'),
                   ),
                 ],
@@ -85,8 +84,8 @@ class _TemplateGalleryContent extends StatelessWidget {
                   categories: _categories,
                   selected: state.selectedCategory,
                   onSelected: (cat) => context
-                      .read<TemplateGalleryBloc>()
-                      .add(TemplateGalleryCategorySelected(cat)),
+                      .read<TemplateGalleryCubit>()
+                      .selectCategory(cat),
                 ),
               ),
               if (state.filtered.isEmpty)

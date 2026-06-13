@@ -8,8 +8,7 @@ import '../../../../core/di/service_locator.dart';
 import '../../../enrollments/data/datasources/enrollments_remote_datasource.dart';
 import '../../../enrollments/domain/entities/enrollment_entity.dart';
 import '../../../enrollments/domain/entities/today_task_entity.dart';
-import '../../../enrollments/presentation/bloc/roadmap_home/roadmap_home_bloc.dart';
-import '../../../enrollments/presentation/bloc/roadmap_home/roadmap_home_event.dart';
+import '../../../enrollments/presentation/bloc/roadmap_home/roadmap_home_cubit.dart';
 import '../../../enrollments/presentation/bloc/roadmap_home/roadmap_home_state.dart';
 
 // ─── Entry ────────────────────────────────────────────────────────────────────
@@ -20,9 +19,9 @@ class RoadmapTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => RoadmapHomeBloc(
+      create: (_) => RoadmapHomeCubit(
           datasource: sl<EnrollmentsRemoteDataSource>())
-        ..add(const RoadmapHomeLoaded()),
+        ..load(),
       child: const _RoadmapHomePage(),
     );
   }
@@ -35,7 +34,7 @@ class _RoadmapHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<RoadmapHomeBloc, RoadmapHomeState>(
+    return BlocBuilder<RoadmapHomeCubit, RoadmapHomeState>(
       builder: (context, state) {
         if (state.status == RoadmapHomeStatus.loading &&
             state.active == null) {
@@ -69,8 +68,8 @@ class _RoadmapHomePage extends StatelessWidget {
                     const SizedBox(height: AppSizes.paddingLg),
                     TextButton(
                       onPressed: () => context
-                          .read<RoadmapHomeBloc>()
-                          .add(const RoadmapHomeRefreshed()),
+                          .read<RoadmapHomeCubit>()
+                          .refresh(),
                       child: const Text('Thử lại'),
                     ),
                   ],
@@ -88,10 +87,10 @@ class _RoadmapHomePage extends StatelessWidget {
             color: AppColors.primary,
             onRefresh: () async {
               context
-                  .read<RoadmapHomeBloc>()
-                  .add(const RoadmapHomeRefreshed());
+                  .read<RoadmapHomeCubit>()
+                  .refresh();
               await context
-                  .read<RoadmapHomeBloc>()
+                  .read<RoadmapHomeCubit>()
                   .stream
                   .firstWhere(
                       (s) => s.status != RoadmapHomeStatus.loading);
@@ -153,7 +152,7 @@ class _RoadmapHomePage extends StatelessWidget {
       ),
     );
     if (ok == true && context.mounted) {
-      context.read<RoadmapHomeBloc>().add(const EnrollmentCancelled());
+      context.read<RoadmapHomeCubit>().cancelEnrollment();
     }
   }
 }
@@ -424,8 +423,8 @@ class _TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context
-          .read<RoadmapHomeBloc>()
-          .add(TaskToggled(task.id)),
+          .read<RoadmapHomeCubit>()
+          .toggleTask(task.id),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOut,
@@ -818,10 +817,8 @@ class _QueueListState extends State<_QueueList> {
                   _local.insert(
                       to > from ? to - 1 : to, item);
                 });
-                context.read<RoadmapHomeBloc>().add(
-                      QueueReordered(
-                          _local.map((e) => e.id).toList()),
-                    );
+                context.read<RoadmapHomeCubit>().reorderQueue(
+                      _local.map((e) => e.id).toList());
               },
               itemBuilder: (_, i) => _QueueCard(
                 key: ValueKey(_local[i].id),

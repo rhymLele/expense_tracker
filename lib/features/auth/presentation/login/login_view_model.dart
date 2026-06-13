@@ -2,35 +2,33 @@ import 'package:flutter/material.dart';
 import '../../../../core/base/base_view_model.dart';
 import '../../../../core/utils/validators/app_validator.dart';
 import '../../domain/usecases/login_usecase.dart';
-import 'bloc/login_bloc.dart';
-import 'bloc/login_event.dart';
+import 'bloc/login_cubit.dart';
 
-class LoginViewModel extends BaseViewModel<LoginBloc> {
+class LoginViewModel extends BaseViewModel<LoginCubit> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
   LoginViewModel({required LoginUseCase loginUseCase})
-      : super(LoginBloc(loginUseCase: loginUseCase)) {
-    bloc.add(const LoginStarted());
+      : super(LoginCubit(loginUseCase: loginUseCase)) {
+    bloc.started();
   }
 
   void submit() {
     if (!formKey.currentState!.validate()) return;
-    bloc.add(LoginSubmitted(
+    bloc.submit(
       email: emailController.text.trim(),
       password: passwordController.text,
-    ));
+    );
   }
 
-  void togglePasswordVisibility() =>
-      bloc.add(const LoginPasswordVisibilityToggled());
+  void togglePasswordVisibility() => bloc.togglePasswordVisibility();
 
-  void dismissError() => bloc.add(const LoginErrorDismissed());
+  void dismissError() => bloc.dismissError();
 
-  void authenticateWithBiometric() => bloc.add(const BiometricLoginRequested());
+  void authenticateWithBiometric() => bloc.requestBiometricLogin();
 
-  void resetBiometric() => bloc.add(const BiometricResetRequested());
+  void resetBiometric() => bloc.resetBiometric();
 
   String? validateEmail(String? v) => AppValidator.email(v);
   String? validatePassword(String? v) => AppValidator.password(v);

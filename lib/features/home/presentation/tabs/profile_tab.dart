@@ -6,8 +6,7 @@ import '../../../../core/constants/sizes.dart';
 import '../../../../core/constants/text_styles.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../auth/domain/entities/user_entity.dart';
-import '../../../auth/presentation/shared/auth_bloc.dart';
-import '../../../auth/presentation/shared/auth_event.dart';
+import '../../../auth/presentation/shared/auth_cubit.dart';
 import '../../../auth/presentation/shared/auth_state.dart';
 import '../../../follows/presentation/cubit/follow_cubit.dart';
 
@@ -16,7 +15,7 @@ class ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
+    return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final user =
             state is AuthAuthenticated ? state.user : null;
@@ -166,7 +165,7 @@ class ProfileTab extends StatelessWidget {
   }
 
   void _logout(BuildContext context) {
-    context.read<AuthBloc>().add(const AuthLogoutRequested());
+    context.read<AuthCubit>().logout();
     Navigator.pushReplacementNamed(context, AppRoutes.login);
   }
 }

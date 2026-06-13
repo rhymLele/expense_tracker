@@ -7,8 +7,7 @@ import '../../../core/constants/text_styles.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/widgets/base_loading.dart';
 import '../../enrollments/domain/entities/enrollment_entity.dart';
-import 'bloc/exercise_session_bloc.dart';
-import 'bloc/exercise_session_event.dart';
+import 'bloc/exercise_session_cubit.dart';
 import 'bloc/exercise_session_state.dart';
 import 'widgets/fill_blank_exercise_widget.dart';
 import 'widgets/mcq_exercise_widget.dart';
@@ -22,8 +21,8 @@ class ExercisePage extends StatelessWidget {
     final enrollment =
         ModalRoute.of(context)!.settings.arguments as EnrollmentEntity;
     return BlocProvider(
-      create: (_) => sl<ExerciseSessionBloc>()
-        ..add(ExerciseSessionStarted(enrollment.id)),
+      create: (_) => sl<ExerciseSessionCubit>()
+        ..start(enrollment.id),
       child: _ExerciseContent(enrollment: enrollment),
     );
   }
@@ -35,7 +34,7 @@ class _ExerciseContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ExerciseSessionBloc, ExerciseSessionState>(
+    return BlocConsumer<ExerciseSessionCubit, ExerciseSessionState>(
       listenWhen: (prev, curr) => prev.status != curr.status,
       listener: (ctx, state) {
         if (state.status == ExerciseSessionStatus.done) {
@@ -110,8 +109,8 @@ class _ExerciseContent extends StatelessWidget {
                 const SizedBox(height: AppSizes.paddingLg),
                 TextButton(
                   onPressed: () => context
-                      .read<ExerciseSessionBloc>()
-                      .add(ExerciseSessionStarted(enrollment.id)),
+                      .read<ExerciseSessionCubit>()
+                      .start(enrollment.id),
                   child: const Text('Thử lại'),
                 ),
               ],
@@ -126,8 +125,8 @@ class _ExerciseContent extends StatelessWidget {
         return _FeedbackOverlay(
           state: state,
           onNext: () => context
-              .read<ExerciseSessionBloc>()
-              .add(const ExerciseFeedbackAcknowledged()),
+              .read<ExerciseSessionCubit>()
+              .acknowledgeFeedback(),
         );
 
       case ExerciseSessionStatus.ready:
@@ -223,8 +222,8 @@ class _ExerciseBody extends StatelessWidget {
           options: options,
           enabled: !isSubmitting,
           onSubmit: (answer) => context
-              .read<ExerciseSessionBloc>()
-              .add(ExerciseAnswerSubmitted(answer)),
+              .read<ExerciseSessionCubit>()
+              .submitAnswer(answer),
         );
       case 'fill_blank':
         exerciseWidget = FillBlankExerciseWidget(
@@ -232,8 +231,8 @@ class _ExerciseBody extends StatelessWidget {
           template: config['template']?.toString() ?? exercise.title,
           enabled: !isSubmitting,
           onSubmit: (answer) => context
-              .read<ExerciseSessionBloc>()
-              .add(ExerciseAnswerSubmitted(answer)),
+              .read<ExerciseSessionCubit>()
+              .submitAnswer(answer),
         );
       case 'recording':
         exerciseWidget = OpenExerciseWidget(
@@ -242,8 +241,8 @@ class _ExerciseBody extends StatelessWidget {
           isRecording: true,
           enabled: !isSubmitting,
           onSubmit: (answer) => context
-              .read<ExerciseSessionBloc>()
-              .add(ExerciseAnswerSubmitted(answer)),
+              .read<ExerciseSessionCubit>()
+              .submitAnswer(answer),
         );
       default: // essay
         exerciseWidget = OpenExerciseWidget(
@@ -251,8 +250,8 @@ class _ExerciseBody extends StatelessWidget {
           prompt: config['prompt']?.toString() ?? exercise.description ?? '',
           enabled: !isSubmitting,
           onSubmit: (answer) => context
-              .read<ExerciseSessionBloc>()
-              .add(ExerciseAnswerSubmitted(answer)),
+              .read<ExerciseSessionCubit>()
+              .submitAnswer(answer),
         );
     }
 

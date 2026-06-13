@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/base/base_view_model.dart';
 import '../../../../core/utils/validators/app_validator.dart';
 import '../../domain/usecases/register_usecase.dart';
-import 'bloc/register_bloc.dart';
-import 'bloc/register_event.dart';
+import 'bloc/register_cubit.dart';
 
-class RegisterViewModel extends BaseViewModel<RegisterBloc> {
+class RegisterViewModel extends BaseViewModel<RegisterCubit> {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -13,29 +12,27 @@ class RegisterViewModel extends BaseViewModel<RegisterBloc> {
   final formKey = GlobalKey<FormState>();
 
   RegisterViewModel({required RegisterUseCase registerUseCase})
-      : super(RegisterBloc(registerUseCase: registerUseCase)) {
-    bloc.add(const RegisterStarted());
+      : super(RegisterCubit(registerUseCase: registerUseCase)) {
+    bloc.started();
   }
 
-  void selectRole(String role) => bloc.add(RegisterRoleChanged(role));
+  void selectRole(String role) => bloc.changeRole(role);
 
   void submit() {
     if (!formKey.currentState!.validate()) return;
-    bloc.add(RegisterSubmitted(
+    bloc.submit(
       name: nameController.text.trim(),
       email: emailController.text.trim(),
       password: passwordController.text,
       role: bloc.state.selectedRole,
-    ));
+    );
   }
 
-  void togglePasswordVisibility() =>
-      bloc.add(const RegisterPasswordVisibilityToggled());
+  void togglePasswordVisibility() => bloc.togglePasswordVisibility();
 
-  void toggleConfirmPasswordVisibility() =>
-      bloc.add(const RegisterConfirmPasswordVisibilityToggled());
+  void toggleConfirmPasswordVisibility() => bloc.toggleConfirmPasswordVisibility();
 
-  void dismissError() => bloc.add(const RegisterErrorDismissed());
+  void dismissError() => bloc.dismissError();
 
   String? validateName(String? v) => AppValidator.required(v, 'Họ và tên');
   String? validateEmail(String? v) => AppValidator.email(v);

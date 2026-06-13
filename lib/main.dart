@@ -6,7 +6,7 @@ import 'core/di/service_locator.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/presentation/shared/auth_bloc.dart';
+import 'features/auth/presentation/shared/auth_cubit.dart';
 
 void main() async {
   await initConfigure();
@@ -24,9 +24,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      // AuthBloc là singleton — tồn tại suốt vòng đời app
-      // Mọi feature đều truy cập qua context.read<AuthBloc>()
-      create: (_) => sl<AuthBloc>(),
+      // AuthCubit là singleton — tồn tại suốt vòng đời app
+      // Mọi feature đều truy cập qua context.read<AuthCubit>()
+      create: (_) => sl<AuthCubit>(),
       child: MaterialApp(
         title: 'LearnSpace',
         debugShowCheckedModeBanner: false,

@@ -6,8 +6,7 @@ import '../../../../core/constants/sizes.dart';
 import '../../../../core/constants/text_styles.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../domain/entities/exercise_template_entity.dart';
-import 'bloc/create_exercise_bloc.dart';
-import 'bloc/create_exercise_event.dart';
+import 'bloc/create_exercise_cubit.dart';
 import 'bloc/create_exercise_state.dart';
 
 class CreateExercisePage extends StatelessWidget {
@@ -18,8 +17,8 @@ class CreateExercisePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CreateExerciseBloc(datasource: sl())
-        ..add(CreateExerciseInitialized(prefill: prefill)),
+      create: (_) => CreateExerciseCubit(datasource: sl())
+        ..initialize(prefill: prefill),
       child: const _CreateExerciseContent(),
     );
   }
@@ -44,15 +43,15 @@ class _CreateExerciseContentState extends State<_CreateExerciseContent> {
   }
 
   void _submit(BuildContext context) {
-    context.read<CreateExerciseBloc>().add(CreateExerciseSubmitted(
+    context.read<CreateExerciseCubit>().submit(
           title: _titleCtrl.text,
           question: _questionCtrl.text,
-        ));
+        );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<CreateExerciseBloc, CreateExerciseState>(
+    return BlocConsumer<CreateExerciseCubit, CreateExerciseState>(
       listenWhen: (prev, curr) => prev.status != curr.status,
       listener: (context, state) {
         if (state.status == CreateExerciseStatus.success) {
@@ -172,8 +171,8 @@ class _TypeSelector extends StatelessWidget {
                     ],
                   ),
                   onSelected: (_) => context
-                      .read<CreateExerciseBloc>()
-                      .add(CreateExerciseTypeChanged(t.$1)),
+                      .read<CreateExerciseCubit>()
+                      .changeType(t.$1),
                   selectedColor: AppColors.primary,
                   backgroundColor: AppColors.surface,
                   labelStyle: TextStyle(
@@ -276,19 +275,19 @@ class _McqForm extends StatelessWidget {
                 value: options[i],
                 isCorrect: i == correctIndex,
                 onChanged: (v) => context
-                    .read<CreateExerciseBloc>()
-                    .add(CreateExerciseOptionChanged(i, v)),
+                    .read<CreateExerciseCubit>()
+                    .changeOption(i, v),
                 onSetCorrect: () => context
-                    .read<CreateExerciseBloc>()
-                    .add(CreateExerciseCorrectIndexChanged(i)),
+                    .read<CreateExerciseCubit>()
+                    .changeCorrectIndex(i),
               ),
             );
           }),
           if (options.length < 6)
             TextButton.icon(
               onPressed: () => context
-                  .read<CreateExerciseBloc>()
-                  .add(const CreateExerciseOptionAdded()),
+                  .read<CreateExerciseCubit>()
+                  .addOption(),
               icon: const Icon(Icons.add, size: 16),
               label: const Text('Thêm lựa chọn'),
               style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
@@ -420,8 +419,8 @@ class _FillBlankFormState extends State<_FillBlankForm> {
           child: TextField(
             controller: _templateCtrl,
             onChanged: (v) => context
-                .read<CreateExerciseBloc>()
-                .add(CreateExerciseFillTemplateChanged(v)),
+                .read<CreateExerciseCubit>()
+                .changeFillTemplate(v),
             decoration: _inputDecoration('VD: The cat ___ on the mat'),
             maxLines: 2,
             style: AppTextStyles.bodyMedium,
@@ -433,8 +432,8 @@ class _FillBlankFormState extends State<_FillBlankForm> {
           child: TextField(
             controller: _answerCtrl,
             onChanged: (v) => context
-                .read<CreateExerciseBloc>()
-                .add(CreateExerciseFillAnswerChanged(v)),
+                .read<CreateExerciseCubit>()
+                .changeFillAnswer(v),
             decoration: _inputDecoration('VD: sat'),
             style: AppTextStyles.bodyMedium,
           ),
@@ -480,7 +479,7 @@ class _ArrangeFormState extends State<_ArrangeForm> {
             controller: _ctrl,
             onChanged: (v) {
               final words = v.split('/').map((w) => w.trim()).where((w) => w.isNotEmpty).toList();
-              context.read<CreateExerciseBloc>().add(CreateExerciseArrangeWordsChanged(words));
+              context.read<CreateExerciseCubit>().changeArrangeWords(words);
             },
             decoration: _inputDecoration('VD: I / am / a / student'),
             maxLines: 2,
@@ -529,8 +528,8 @@ class _RecordingFormState extends State<_RecordingForm> {
       child: TextField(
         controller: _ctrl,
         onChanged: (v) => context
-            .read<CreateExerciseBloc>()
-            .add(CreateExerciseRecordingPromptChanged(v)),
+            .read<CreateExerciseCubit>()
+            .changeRecordingPrompt(v),
         decoration: _inputDecoration('VD: Đọc đoạn văn sau với tốc độ tự nhiên…'),
         maxLines: 4,
         style: AppTextStyles.bodyMedium,
@@ -571,8 +570,8 @@ class _EssayFormState extends State<_EssayForm> {
       child: TextField(
         controller: _ctrl,
         onChanged: (v) => context
-            .read<CreateExerciseBloc>()
-            .add(CreateExerciseEssayPromptChanged(v)),
+            .read<CreateExerciseCubit>()
+            .changeEssayPrompt(v),
         decoration: _inputDecoration('VD: Viết đoạn văn 100–150 từ về chủ đề môi trường…'),
         maxLines: 5,
         style: AppTextStyles.bodyMedium,

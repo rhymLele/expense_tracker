@@ -15,14 +15,13 @@ import '../../../../core/network/api_constants.dart';
 import '../../../../core/network/base_remote_datasource.dart';
 import '../../../../core/network/http_method.dart';
 import '../../../../core/router/app_router.dart';
-import '../../../feed/presentation/bloc/feed_bloc.dart';
-import '../../../feed/presentation/bloc/feed_event.dart';
+import '../../../feed/presentation/bloc/feed_cubit.dart';
 import '../../../feed/presentation/bloc/feed_state.dart';
 import '../../../topics/data/models/topic_model.dart';
 import '../../../topics/domain/entities/topic_entity.dart';
 
 class FeedTab extends StatelessWidget {
-  final FeedBloc? bloc;
+  final FeedCubit? bloc;
   const FeedTab({super.key, this.bloc});
 
   @override
@@ -31,7 +30,7 @@ class FeedTab extends StatelessWidget {
       return BlocProvider.value(value: bloc!, child: const _FeedContent());
     }
     return BlocProvider(
-      create: (_) => sl<FeedBloc>()..add(const FeedLoadRequested()),
+      create: (_) => sl<FeedCubit>()..load(),
       child: const _FeedContent(),
     );
   }
@@ -42,14 +41,14 @@ class _FeedContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FeedBloc, FeedState>(
+    return BlocBuilder<FeedCubit, FeedState>(
       builder: (context, state) {
         return RefreshIndicator(
           color: AppColors.primary,
           onRefresh: () async {
-            context.read<FeedBloc>().add(const FeedRefreshRequested());
+            context.read<FeedCubit>().refresh();
             await context
-                .read<FeedBloc>()
+                .read<FeedCubit>()
                 .stream
                 .firstWhere((s) => s.status != FeedStatus.loading);
           },
@@ -77,8 +76,8 @@ class _FeedContent extends StatelessWidget {
                   child: _ErrorView(
                     message: state.errorMessage,
                     onRetry: () => context
-                        .read<FeedBloc>()
-                        .add(const FeedLoadRequested()),
+                        .read<FeedCubit>()
+                        .load(),
                   ),
                 )
               else if (state.topics.isNotEmpty)
@@ -93,8 +92,8 @@ class _FeedContent extends StatelessWidget {
                     itemBuilder: (ctx, i) {
                       if (i == state.topics.length) {
                         ctx
-                            .read<FeedBloc>()
-                            .add(const FeedLoadMoreRequested());
+                            .read<FeedCubit>()
+                            .loadMore();
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 16),
                           child: Center(

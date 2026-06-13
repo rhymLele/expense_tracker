@@ -19,7 +19,7 @@ class RegisterPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.read<RegisterViewModel>();
 
-    return BlocConsumer<RegisterBloc, RegisterState>(
+    return BlocConsumer<RegisterCubit, RegisterState>(
       listenWhen: (prev, curr) => prev.status != curr.status,
       listener: (ctx, state) => _onStateChanged(ctx, state, vm),
       builder: (ctx, state) => _buildScaffold(ctx, state, vm),
@@ -28,7 +28,7 @@ class RegisterPage extends StatelessWidget {
 
   void _onStateChanged(BuildContext ctx, RegisterState state, RegisterViewModel vm) {
     if (state.isSuccess && state.user != null) {
-      ctx.read<AuthBloc>().add(AuthLoginSucceeded(state.user!));
+      ctx.read<AuthCubit>().loginSucceeded(state.user!);
       Navigator.pushReplacementNamed(ctx, AppRoutes.home);
       return;
     }

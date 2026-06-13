@@ -5,7 +5,7 @@ import '../../../core/constants/colors.dart';
 import '../../../core/constants/sizes.dart';
 import '../../../core/constants/text_styles.dart';
 import '../../../core/widgets/skeletons/app_skeletons.dart';
-import 'bloc/topic_detail_bloc.dart';
+import 'bloc/topic_detail_cubit.dart';
 import 'bloc/topic_detail_state.dart';
 import 'topic_detail_view_model.dart';
 import 'widgets/topic_detail_widgets.dart';
@@ -20,12 +20,17 @@ class TopicDetailPage extends StatefulWidget {
 class _TopicDetailPageState extends State<TopicDetailPage> {
   final _commentController = TextEditingController();
 
+  bool _loaded = false;
+
   @override
-  void initState() {
-    super.initState();
-    final topicId = ModalRoute.of(context)?.settings.arguments as String?;
-    if (topicId != null) {
-      context.read<TopicDetailViewModel>().load(topicId);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loaded) {
+      _loaded = true;
+      final topicId = ModalRoute.of(context)?.settings.arguments as String?;
+      if (topicId != null) {
+        context.read<TopicDetailViewModel>().load(topicId);
+      }
     }
   }
 
@@ -46,7 +51,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
         scrolledUnderElevation: 1,
         surfaceTintColor: AppColors.background,
       ),
-      body: BlocBuilder<TopicDetailBloc, TopicDetailState>(
+      body: BlocBuilder<TopicDetailCubit, TopicDetailState>(
         builder: (context, state) {
           if (state.status == TopicDetailStatus.loading) {
             return const TopicDetailSkeleton();

@@ -7,9 +7,9 @@ import '../domain/repositories/enrollments_repository.dart';
 import '../domain/usecases/get_my_enrollments_usecase.dart';
 import '../domain/usecases/get_today_tasks_usecase.dart';
 import '../domain/usecases/use_freeze_usecase.dart';
-import '../presentation/bloc/enrollments_bloc.dart';
-import '../presentation/bloc/roadmap_home/roadmap_home_bloc.dart';
-import '../presentation/bloc/today_tasks_bloc.dart';
+import '../presentation/bloc/enrollments_cubit.dart';
+import '../presentation/bloc/roadmap_home/roadmap_home_cubit.dart';
+import '../presentation/bloc/today_tasks_cubit.dart';
 
 class EnrollmentsDI extends BaseFeatureDI {
   @override
@@ -36,13 +36,13 @@ class EnrollmentsDI extends BaseFeatureDI {
   @override
   void blocs(GetIt sl) {
     sl.registerFactory(
-      () => EnrollmentsBloc(getMyEnrollmentsUseCase: sl()),
+      () => EnrollmentsCubit(getMyEnrollmentsUseCase: sl()),
     );
     sl.registerFactory(
-      () => TodayTasksBloc(getTodayTasks: sl()),
+      () => TodayTasksCubit(getTodayTasks: sl()),
     );
     sl.registerFactory(
-      () => RoadmapHomeBloc(datasource: sl()),
+      () => RoadmapHomeCubit(datasource: sl()),
     );
   }
 }

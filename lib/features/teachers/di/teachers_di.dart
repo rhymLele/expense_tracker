@@ -7,8 +7,8 @@ import '../domain/repositories/teachers_repository.dart';
 import '../domain/usecases/get_teacher_profile_usecase.dart';
 import '../domain/usecases/get_teachers_usecase.dart';
 import '../domain/usecases/update_teacher_profile_usecase.dart';
-import '../presentation/bloc/teachers_list_bloc.dart';
-import '../presentation/bloc/teacher_profile_bloc.dart';
+import '../presentation/bloc/teachers_list_cubit.dart';
+import '../presentation/bloc/teacher_profile_cubit.dart';
 import '../presentation/teacher_profile_view_model.dart';
 
 class TeachersDI extends BaseFeatureDI {
@@ -36,10 +36,10 @@ class TeachersDI extends BaseFeatureDI {
   @override
   void blocs(GetIt sl) {
     sl.registerFactory(
-      () => TeachersListBloc(getTeachersUseCase: sl()),
+      () => TeachersListCubit(getTeachersUseCase: sl()),
     );
     sl.registerFactory(
-      () => TeacherProfileBloc(
+      () => TeacherProfileCubit(
         getTeacherProfile: sl(),
         getTopicsByTeacher: sl(),
         follow: sl(),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'roadmap_creation_event.dart';
+import 'roadmap_creation_models.dart';
 import 'roadmap_creation_state.dart';
 
 class RoadmapCreationBloc
@@ -59,10 +60,12 @@ class RoadmapCreationBloc
     RoadmapCoverColorChanged event,
     Emitter<RoadmapCreationState> emit,
   ) {
-    emit(state.copyWith(
-      coverColor: event.color,
-      coverImagePath: null, // reset image when solid color is chosen
-    ));
+    emit(
+      state.copyWith(
+        coverColor: event.color,
+        coverImagePath: null, // reset image when solid color is chosen
+      ),
+    );
   }
 
   void _onCoverImageChanged(
@@ -88,10 +91,7 @@ class RoadmapCreationBloc
     emit(state.copyWith(level: event.level));
   }
 
-  void _onDayAdded(
-    RoadmapDayAdded _,
-    Emitter<RoadmapCreationState> emit,
-  ) {
+  void _onDayAdded(RoadmapDayAdded _, Emitter<RoadmapCreationState> emit) {
     final days = [...state.days, const RoadmapDayDraft()];
     emit(state.copyWith(days: days, totalDays: days.length));
   }
@@ -117,7 +117,9 @@ class RoadmapCreationBloc
       updated = [
         ...current,
         ...List.generate(
-            newTotal - current.length, (_) => const RoadmapDayDraft()),
+          newTotal - current.length,
+          (_) => const RoadmapDayDraft(),
+        ),
       ];
     } else {
       updated = current.take(newTotal).toList();
@@ -131,20 +133,15 @@ class RoadmapCreationBloc
   ) {
     final days = List<RoadmapDayDraft>.from(state.days);
     if (event.dayIndex >= days.length) return;
-    days[event.dayIndex] =
-        days[event.dayIndex].copyWith(title: event.title);
+    days[event.dayIndex] = days[event.dayIndex].copyWith(title: event.title);
     emit(state.copyWith(days: days));
   }
 
-  void _onTaskAdded(
-    TaskAddedToDay event,
-    Emitter<RoadmapCreationState> emit,
-  ) {
+  void _onTaskAdded(TaskAddedToDay event, Emitter<RoadmapCreationState> emit) {
     final days = List<RoadmapDayDraft>.from(state.days);
     if (event.dayIndex >= days.length) return;
     final day = days[event.dayIndex];
-    days[event.dayIndex] =
-        day.copyWith(tasks: [...day.tasks, event.task]);
+    days[event.dayIndex] = day.copyWith(tasks: [...day.tasks, event.task]);
     emit(state.copyWith(days: days));
   }
 
@@ -157,8 +154,7 @@ class RoadmapCreationBloc
     final tasks = List<RoadmapTaskDraft>.from(days[event.dayIndex].tasks);
     if (event.taskIndex >= tasks.length) return;
     tasks.removeAt(event.taskIndex);
-    days[event.dayIndex] =
-        days[event.dayIndex].copyWith(tasks: tasks);
+    days[event.dayIndex] = days[event.dayIndex].copyWith(tasks: tasks);
     emit(state.copyWith(days: days));
   }
 
@@ -168,13 +164,12 @@ class RoadmapCreationBloc
   ) {
     final days = List<RoadmapDayDraft>.from(state.days);
     if (event.dayIndex >= days.length) return;
-    final tasks =
-        List<RoadmapTaskDraft>.from(days[event.dayIndex].tasks);
+    final tasks = List<RoadmapTaskDraft>.from(days[event.dayIndex].tasks);
     if (event.taskIndex >= tasks.length) return;
-    tasks[event.taskIndex] =
-        tasks[event.taskIndex].copyWith(title: event.description);
-    days[event.dayIndex] =
-        days[event.dayIndex].copyWith(tasks: tasks);
+    tasks[event.taskIndex] = tasks[event.taskIndex].copyWith(
+      title: event.description,
+    );
+    days[event.dayIndex] = days[event.dayIndex].copyWith(tasks: tasks);
     emit(state.copyWith(days: days));
   }
 
@@ -184,13 +179,12 @@ class RoadmapCreationBloc
   ) {
     final days = List<RoadmapDayDraft>.from(state.days);
     if (event.dayIndex >= days.length) return;
-    final tasks =
-        List<RoadmapTaskDraft>.from(days[event.dayIndex].tasks);
+    final tasks = List<RoadmapTaskDraft>.from(days[event.dayIndex].tasks);
     if (event.taskIndex >= tasks.length) return;
-    tasks[event.taskIndex] =
-        tasks[event.taskIndex].copyWith(type: event.skillType);
-    days[event.dayIndex] =
-        days[event.dayIndex].copyWith(tasks: tasks);
+    tasks[event.taskIndex] = tasks[event.taskIndex].copyWith(
+      type: event.skillType,
+    );
+    days[event.dayIndex] = days[event.dayIndex].copyWith(tasks: tasks);
     emit(state.copyWith(days: days));
   }
 
@@ -208,10 +202,12 @@ class RoadmapCreationBloc
       await Future.delayed(const Duration(seconds: 1));
       emit(state.copyWith(status: RoadmapCreationStatus.success));
     } catch (e) {
-      emit(state.copyWith(
-        status: RoadmapCreationStatus.failure,
-        errorMessage: e.toString(),
-      ));
+      emit(
+        state.copyWith(
+          status: RoadmapCreationStatus.failure,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 

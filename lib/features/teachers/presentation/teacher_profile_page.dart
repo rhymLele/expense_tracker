@@ -6,7 +6,7 @@ import '../../../core/constants/sizes.dart';
 import '../../../core/constants/text_styles.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/skeletons/app_skeletons.dart';
-import 'bloc/teacher_profile_bloc.dart';
+import 'bloc/teacher_profile_cubit.dart';
 import 'bloc/teacher_profile_state.dart';
 import 'teacher_profile_view_model.dart';
 import 'widgets/teacher_profile_widgets.dart';
@@ -19,12 +19,17 @@ class TeacherProfilePage extends StatefulWidget {
 }
 
 class _TeacherProfilePageState extends State<TeacherProfilePage> {
+  bool _loaded = false;
+
   @override
-  void initState() {
-    super.initState();
-    final userId = ModalRoute.of(context)?.settings.arguments as String?;
-    if (userId != null) {
-      context.read<TeacherProfileViewModel>().load(userId);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loaded) {
+      _loaded = true;
+      final userId = ModalRoute.of(context)?.settings.arguments as String?;
+      if (userId != null) {
+        context.read<TeacherProfileViewModel>().load(userId);
+      }
     }
   }
 
@@ -32,7 +37,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: BlocBuilder<TeacherProfileBloc, TeacherProfileState>(
+      body: BlocBuilder<TeacherProfileCubit, TeacherProfileState>(
         builder: (context, state) {
           if (state.status == TeacherProfileStatus.loading) {
             return const TeacherProfileSkeleton();
