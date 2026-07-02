@@ -4,10 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
 import '../../../../core/constants/text_styles.dart';
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/shared/auth_cubit.dart';
 import '../../../auth/presentation/shared/auth_state.dart';
+import '../../../enrollments/presentation/bloc/enrollments_cubit.dart';
 import '../../../follows/presentation/cubit/follow_cubit.dart';
 
 class ProfileTab extends StatelessWidget {
@@ -15,15 +17,17 @@ class ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthCubit, AuthState>(
-      builder: (context, state) {
-        final user =
-            state is AuthAuthenticated ? state.user : null;
-        return CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(child: _buildHeader(user)),
-            SliverToBoxAdapter(child: _buildStats(context)),
-            SliverPadding(
+    return BlocProvider(
+      create: (_) => sl<EnrollmentsCubit>()..load(),
+      child: BlocBuilder<AuthCubit, AuthState>(
+        builder: (context, state) {
+          final user =
+              state is AuthAuthenticated ? state.user : null;
+            return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader(user)),
+              SliverToBoxAdapter(child: _buildStats(context)),
+              SliverPadding(
               padding: const EdgeInsets.all(AppSizes.paddingLg),
               sliver: SliverList.list(children: [
                 _buildSection('Tài khoản'),
@@ -61,7 +65,8 @@ class ProfileTab extends StatelessWidget {
             ),
           ],
         );
-      },
+        },
+      ),
     );
   }
 
@@ -132,6 +137,10 @@ class ProfileTab extends StatelessWidget {
 
   Widget _buildStats(BuildContext context) {
     final followCount = context.watch<FollowCubit?>()?.state.followedIds.length ?? 0;
+    final enrollState = context.watch<EnrollmentsCubit>().state;
+    final activeCount = enrollState.enrollments.where((e) => e.isActive).length;
+    final completedCount =
+        enrollState.enrollments.where((e) => e.status == 'completed').length;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSizes.paddingLg),
       padding: const EdgeInsets.all(AppSizes.paddingLg),
@@ -142,9 +151,9 @@ class ProfileTab extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Expanded(child: _StatItem(value: '0', label: 'Đang học')),
+          Expanded(child: _StatItem(value: '$activeCount', label: 'Đang học')),
           const _StatDivider(),
-          const Expanded(child: _StatItem(value: '0', label: 'Đã hoàn thành')),
+          Expanded(child: _StatItem(value: '$completedCount', label: 'Đã hoàn thành')),
           const _StatDivider(),
           Expanded(
             child: _StatItem(

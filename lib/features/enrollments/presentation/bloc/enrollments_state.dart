@@ -1,31 +1,30 @@
-import 'package:equatable/equatable.dart';
-
+import '../../../../core/base/base_state.dart';
 import '../../domain/entities/enrollment_entity.dart';
 
-enum EnrollmentsStatus { initial, loading, success, failure }
-
-class EnrollmentsState extends Equatable {
-  final EnrollmentsStatus status;
+class EnrollmentsState extends BaseState<EnrollmentsState> {
   final List<EnrollmentEntity> enrollments;
-  final String? errorMessage;
 
   const EnrollmentsState({
-    this.status = EnrollmentsStatus.initial,
+    super.status,
+    super.error,
     this.enrollments = const [],
-    this.errorMessage,
   });
 
   EnrollmentsState copyWith({
-    EnrollmentsStatus? status,
+    ViewStatus? status,
     List<EnrollmentEntity>? enrollments,
-    String? errorMessage,
+    String? error,
   }) =>
       EnrollmentsState(
         status: status ?? this.status,
         enrollments: enrollments ?? this.enrollments,
-        errorMessage: errorMessage,
+        error: error,
       );
 
   @override
-  List<Object?> get props => [status, enrollments, errorMessage];
+  EnrollmentsState copyWithBase({ViewStatus? status, String? error}) =>
+      copyWith(status: status, error: error);
+
+  @override
+  List<Object?> get props => [status, error, enrollments];
 }

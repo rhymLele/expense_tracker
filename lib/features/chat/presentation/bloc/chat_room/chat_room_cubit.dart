@@ -1,6 +1,6 @@
 import 'dart:developer' as dev;
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/base/base_cubit.dart';
 import '../../../data/datasources/chat_remote_datasource.dart';
 import '../../../domain/entities/message_entity.dart';
 
@@ -37,12 +37,16 @@ class ChatRoomState extends Equatable {
 }
 
 // Cubit
-class ChatRoomCubit extends Cubit<ChatRoomState> {
+class ChatRoomCubit extends BaseCubit<ChatRoomState> {
   final ChatRemoteDataSource _ds;
 
   ChatRoomCubit({required ChatRemoteDataSource datasource})
       : _ds = datasource,
         super(const ChatRoomState());
+
+  /// Phòng chat mở qua [loadRoom] từ UI.
+  @override
+  Future<void> fetchData() async {}
 
   Future<void> loadRoom(String conversationId) async {
     emit(state.copyWith(

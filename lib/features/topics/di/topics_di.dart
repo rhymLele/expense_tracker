@@ -5,6 +5,7 @@ import '../data/datasources/topics_remote_datasource.dart';
 import '../data/repositories/topics_repository_impl.dart';
 import '../domain/repositories/topics_repository.dart';
 import '../domain/usecases/add_topic_comment_usecase.dart';
+import '../domain/usecases/apply_like_toggle_usecase.dart';
 import '../domain/usecases/create_topic_usecase.dart';
 import '../domain/usecases/get_topic_comments_usecase.dart';
 import '../domain/usecases/get_topic_usecase.dart';
@@ -34,6 +35,7 @@ class TopicsDI extends BaseFeatureDI {
     sl.registerLazySingleton(() => GetTopicsByTeacherUseCase(sl()));
     sl.registerLazySingleton(() => CreateTopicUseCase(sl()));
     sl.registerLazySingleton(() => ToggleLikeUseCase(sl()));
+    sl.registerLazySingleton(() => const ApplyLikeToggleUseCase());
     sl.registerLazySingleton(() => GetTopicCommentsUseCase(sl()));
     sl.registerLazySingleton(() => AddTopicCommentUseCase(sl()));
   }

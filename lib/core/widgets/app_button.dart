@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/sizes.dart';
-import '../constants/text_styles.dart';
 
 /// App-wide button with 3 variants. Inherits style from [AppTheme] by default.
 /// All defaults come from the theme — never hardcode values here.
@@ -63,34 +62,37 @@ class AppButton extends StatelessWidget {
             ),
           )
         : icon != null
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: AppSizes.iconSm),
-                  const SizedBox(width: AppSizes.paddingXs),
-                  Text(label),
-                ],
-              )
-            : Text(label);
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: AppSizes.iconSm),
+              const SizedBox(width: AppSizes.paddingXs),
+              Text(label),
+            ],
+          )
+        : Text(label);
 
-    final size = Size(width ?? double.infinity, height ?? AppSizes.buttonHeight);
+    final size = Size(
+      width ?? double.infinity,
+      height ?? AppSizes.buttonHeight,
+    );
 
     return switch (_variant) {
       _ButtonVariant.primary => ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: ElevatedButton.styleFrom(minimumSize: size, maximumSize: size),
-          child: child,
-        ),
+        onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(minimumSize: size, maximumSize: size),
+        child: child,
+      ),
       _ButtonVariant.outline => OutlinedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: OutlinedButton.styleFrom(minimumSize: size, maximumSize: size),
-          child: child,
-        ),
+        onPressed: isLoading ? null : onPressed,
+        style: OutlinedButton.styleFrom(minimumSize: size, maximumSize: size),
+        child: child,
+      ),
       _ButtonVariant.text => TextButton(
-          onPressed: isLoading ? null : onPressed,
-          style: TextButton.styleFrom(minimumSize: size, maximumSize: size),
-          child: child,
-        ),
+        onPressed: isLoading ? null : onPressed,
+        style: TextButton.styleFrom(minimumSize: size, maximumSize: size),
+        child: child,
+      ),
     };
   }
 }

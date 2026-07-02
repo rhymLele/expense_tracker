@@ -1,36 +1,31 @@
-import 'package:equatable/equatable.dart';
-
+import '../../../../core/base/base_state.dart';
 import '../../domain/entities/teacher_profile_entity.dart';
 
-enum TeachersListStatus { initial, loading, success, failure, loadingMore }
-
-class TeachersListState extends Equatable {
-  final TeachersListStatus status;
+class TeachersListState extends BaseState<TeachersListState> {
   final List<TeacherProfileEntity> teachers;
   final String query;
   final String? subject;
   final bool hasMore;
   final int page;
-  final String? errorMessage;
 
   const TeachersListState({
-    this.status = TeachersListStatus.initial,
+    super.status,
+    super.error,
     this.teachers = const [],
     this.query = '',
     this.subject,
     this.hasMore = true,
     this.page = 1,
-    this.errorMessage,
   });
 
   TeachersListState copyWith({
-    TeachersListStatus? status,
+    ViewStatus? status,
     List<TeacherProfileEntity>? teachers,
     String? query,
     String? subject,
     bool? hasMore,
     int? page,
-    String? errorMessage,
+    String? error,
   }) =>
       TeachersListState(
         status: status ?? this.status,
@@ -39,10 +34,14 @@ class TeachersListState extends Equatable {
         subject: subject,
         hasMore: hasMore ?? this.hasMore,
         page: page ?? this.page,
-        errorMessage: errorMessage,
+        error: error,
       );
 
   @override
+  TeachersListState copyWithBase({ViewStatus? status, String? error}) =>
+      copyWith(status: status, error: error);
+
+  @override
   List<Object?> get props =>
-      [status, teachers, query, subject, hasMore, page, errorMessage];
+      [status, error, teachers, query, subject, hasMore, page];
 }

@@ -1,31 +1,30 @@
-import 'package:equatable/equatable.dart';
-
+import '../../../../core/base/base_state.dart';
 import '../../domain/entities/today_tasks_entity.dart';
 
-enum TodayTasksStatus { initial, loading, success, failure }
-
-class TodayTasksState extends Equatable {
-  final TodayTasksStatus status;
+class TodayTasksState extends BaseState<TodayTasksState> {
   final TodayTasksEntity? todayTasks;
-  final String? errorMessage;
 
   const TodayTasksState({
-    this.status = TodayTasksStatus.initial,
+    super.status,
+    super.error,
     this.todayTasks,
-    this.errorMessage,
   });
 
   TodayTasksState copyWith({
-    TodayTasksStatus? status,
+    ViewStatus? status,
     TodayTasksEntity? todayTasks,
-    String? errorMessage,
+    String? error,
   }) =>
       TodayTasksState(
         status: status ?? this.status,
         todayTasks: todayTasks ?? this.todayTasks,
-        errorMessage: errorMessage,
+        error: error,
       );
 
   @override
-  List<Object?> get props => [status, todayTasks, errorMessage];
+  TodayTasksState copyWithBase({ViewStatus? status, String? error}) =>
+      copyWith(status: status, error: error);
+
+  @override
+  List<Object?> get props => [status, error, todayTasks];
 }

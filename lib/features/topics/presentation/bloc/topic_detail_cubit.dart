@@ -1,12 +1,12 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../../../../core/base/base_cubit.dart';
+import '../../../../core/base/base_state.dart';
 import '../../domain/usecases/get_topic_usecase.dart';
 import '../../domain/usecases/get_topic_comments_usecase.dart';
 import '../../domain/usecases/toggle_like_usecase.dart';
 import '../../domain/usecases/add_topic_comment_usecase.dart';
 import 'topic_detail_state.dart';
 
-class TopicDetailCubit extends Cubit<TopicDetailState> {
+class TopicDetailCubit extends LoadCubit<TopicDetailState> {
   final GetTopicUseCase _getTopic;
   final GetTopicCommentsUseCase _getComments;
   final ToggleLikeUseCase _toggleLike;
@@ -23,24 +23,26 @@ class TopicDetailCubit extends Cubit<TopicDetailState> {
         _addComment = addComment,
         super(const TopicDetailState());
 
+  /// Load theo [topicId] từ UI.
+  @override
+  Future<void> fetchData() async {}
+
   Future<void> load(String topicId) async {
-    emit(state.copyWith(status: TopicDetailStatus.loading));
+    emit(state.copyWith(status: ViewStatus.loading));
 
     final topicResult = await _getTopic(topicId);
     await topicResult.fold(
-      (f) async => emit(state.copyWith(
-        status: TopicDetailStatus.failure,
-        errorMessage: f.message,
-      )),
+      (f) async =>
+          emit(state.copyWith(status: ViewStatus.failure, error: f.message)),
       (topic) async {
         final commentsResult = await _getComments(topicId);
         commentsResult.fold(
           (_) => emit(state.copyWith(
-            status: TopicDetailStatus.success,
+            status: ViewStatus.success,
             topic: topic,
           )),
           (comments) => emit(state.copyWith(
-            status: TopicDetailStatus.success,
+            status: ViewStatus.success,
             topic: topic,
             comments: comments,
           )),

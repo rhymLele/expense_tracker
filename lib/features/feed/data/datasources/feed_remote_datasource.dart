@@ -21,19 +21,32 @@ class FeedRemoteDataSourceImpl extends BaseRemoteDataSource
       queryParameters: {'page': page, 'limit': limit},
     );
 
-    // Handle both flat { data: [...], count: N }
-    // and nested { data: { data/items: [...], count/total: N } }
+    // Backend feed returns: { data: { topics: { items: [...], total: N }, roadmaps, posts } }
     final rawData = res['data'];
     final List dataList;
     final int count;
 
     if (rawData is List) {
+      // Flat list (unlikely for feed but handle gracefully)
       dataList = rawData;
       count = res['count'] as int? ?? dataList.length;
     } else if (rawData is Map) {
-      final nested = rawData['data'] ?? rawData['items'] ?? rawData['topics'] ?? [];
-      dataList = nested is List ? nested : [];
-      count = (rawData['count'] ?? rawData['total'] ?? res['count'] ?? dataList.length) as int;
+      // Feed envelope: { topics: { items, total }, roadmaps, posts }
+      final topicsNode = rawData['topics'];
+      if (topicsNode is Map) {
+        dataList = (topicsNode['items'] as List?) ?? [];
+        count = topicsNode['total'] as int? ??
+            topicsNode['count'] as int? ??
+            dataList.length;
+      } else if (topicsNode is List) {
+        dataList = topicsNode;
+        count = dataList.length;
+      } else {
+        // Fallback: flat items/data key
+        final nested = rawData['items'] ?? rawData['data'] ?? [];
+        dataList = nested is List ? nested : [];
+        count = (rawData['total'] ?? rawData['count'] ?? res['count'] ?? dataList.length) as int;
+      }
     } else {
       dataList = [];
       count = 0;

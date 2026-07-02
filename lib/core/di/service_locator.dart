@@ -3,6 +3,8 @@ import 'package:get_it/get_it.dart';
 import '../../features/auth/di/auth_di.dart';
 import '../../features/chat/di/chat_di.dart';
 import '../../features/enrollments/di/enrollments_di.dart';
+import '../../features/notifications/di/notifications_di.dart';
+import '../../features/posts/di/posts_di.dart';
 import '../../features/exercises/di/exercises_di.dart';
 import '../../features/feed/di/feed_di.dart';
 import '../../features/follows/di/follows_di.dart';
@@ -38,6 +40,8 @@ void _registerFeatures() {
     EnrollmentsDI(),
     SubmissionsDI(),
     ChatDI(),
+    NotificationsDI(),
+    PostsDI(),
   ];
   for (final feature in features) {
     feature.register(sl);

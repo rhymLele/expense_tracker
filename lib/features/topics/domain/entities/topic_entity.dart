@@ -30,6 +30,21 @@ class TopicEntity extends Equatable {
     this.authorAvatarUrl,
   });
 
+  TopicEntity copyWith({int? likeCount, int? commentCount}) => TopicEntity(
+        id: id,
+        teacherId: teacherId,
+        type: type,
+        visibility: visibility,
+        title: title,
+        content: content,
+        mediaUrl: mediaUrl,
+        likeCount: likeCount ?? this.likeCount,
+        commentCount: commentCount ?? this.commentCount,
+        createdAt: createdAt,
+        authorName: authorName,
+        authorAvatarUrl: authorAvatarUrl,
+      );
+
   @override
   List<Object?> get props => [
         id, teacherId, type, visibility, title,

@@ -1,12 +1,12 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../../../../core/base/base_cubit.dart';
+import '../../../../core/base/base_state.dart';
 import '../../domain/usecases/get_teacher_profile_usecase.dart';
 import '../../../follows/domain/usecases/follow_teacher_usecase.dart';
 import '../../../follows/domain/usecases/unfollow_teacher_usecase.dart';
 import '../../../topics/domain/usecases/get_topics_by_teacher_usecase.dart';
 import 'teacher_profile_state.dart';
 
-class TeacherProfileCubit extends Cubit<TeacherProfileState> {
+class TeacherProfileCubit extends LoadCubit<TeacherProfileState> {
   final GetTeacherProfileUseCase _getTeacherProfile;
   final GetTopicsByTeacherUseCase _getTopicsByTeacher;
   final FollowTeacherUseCase _follow;
@@ -23,25 +23,27 @@ class TeacherProfileCubit extends Cubit<TeacherProfileState> {
         _unfollow = unfollow,
         super(const TeacherProfileState());
 
+  /// Load theo [userId] từ UI.
+  @override
+  Future<void> fetchData() async {}
+
   Future<void> load(String userId) async {
-    emit(state.copyWith(status: TeacherProfileStatus.loading));
+    emit(state.copyWith(status: ViewStatus.loading));
 
     final profileResult = await _getTeacherProfile(userId);
     await profileResult.fold(
-      (f) async => emit(state.copyWith(
-        status: TeacherProfileStatus.failure,
-        errorMessage: f.message,
-      )),
+      (f) async =>
+          emit(state.copyWith(status: ViewStatus.failure, error: f.message)),
       (teacher) async {
         final topicsResult =
             await _getTopicsByTeacher(teacher.userId, page: 1, limit: 20);
         topicsResult.fold(
           (_) => emit(state.copyWith(
-            status: TeacherProfileStatus.success,
+            status: ViewStatus.success,
             teacher: teacher,
           )),
           (p) => emit(state.copyWith(
-            status: TeacherProfileStatus.success,
+            status: ViewStatus.success,
             teacher: teacher,
             topics: p.items,
           )),
@@ -61,7 +63,8 @@ class TeacherProfileCubit extends Cubit<TeacherProfileState> {
         : await _follow(state.teacher!.userId);
 
     result.fold(
-      (_) => emit(state.copyWith(isFollowing: wasFollowing, isFollowLoading: false)),
+      (_) => emit(
+          state.copyWith(isFollowing: wasFollowing, isFollowLoading: false)),
       (_) => emit(state.copyWith(isFollowLoading: false)),
     );
   }

@@ -10,6 +10,8 @@ abstract class TopicsRemoteDataSource {
   Future<TopicModel> getTopic(String id);
   Future<PaginatedResult<TopicModel>> getTopicsByTeacher(String teacherId,
       {int page, int limit});
+  Future<PaginatedResult<TopicModel>> searchTopics(String query,
+      {int page, int limit});
   Future<TopicModel> createTopic({
     required String type,
     required String title,
@@ -43,6 +45,20 @@ class TopicsRemoteDataSourceImpl extends BaseRemoteDataSource
       ApiConstants.topicsByTeacher(teacherId),
       HttpMethod.get,
       queryParameters: {'page': page, 'limit': limit},
+    );
+    return ApiResponseMapper.paginated(res, TopicModel.fromJson);
+  }
+
+  @override
+  Future<PaginatedResult<TopicModel>> searchTopics(
+    String query, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final res = await baseSendRequest(
+      ApiConstants.topics,
+      HttpMethod.get,
+      queryParameters: {'search': query, 'page': page, 'limit': limit},
     );
     return ApiResponseMapper.paginated(res, TopicModel.fromJson);
   }

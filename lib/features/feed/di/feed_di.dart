@@ -29,6 +29,10 @@ class FeedDI extends BaseFeatureDI {
 
   @override
   void blocs(GetIt sl) {
-    sl.registerFactory(() => FeedCubit(getFeedUseCase: sl()));
+    sl.registerFactory(() => FeedCubit(
+          getFeedUseCase: sl(),
+          toggleLikeUseCase: sl(),
+          applyLikeToggleUseCase: sl(),
+        ));
   }
 }

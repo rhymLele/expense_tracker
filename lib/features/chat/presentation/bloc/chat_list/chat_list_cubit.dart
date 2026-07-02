@@ -1,6 +1,6 @@
 import 'dart:developer' as dev;
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/base/base_cubit.dart';
 import '../../../data/datasources/chat_remote_datasource.dart';
 import '../../../domain/entities/conversation_entity.dart';
 
@@ -30,13 +30,16 @@ class ChatListState extends Equatable {
 }
 
 // Cubit
-class ChatListCubit extends Cubit<ChatListState> {
+class ChatListCubit extends BaseCubit<ChatListState> {
   final ChatRemoteDataSource _ds;
   final String currentUserId;
 
   ChatListCubit({required ChatRemoteDataSource datasource, required this.currentUserId})
       : _ds = datasource,
         super(const ChatListState());
+
+  @override
+  Future<void> fetchData() => _fetch();
 
   Future<void> load() => _fetch();
   Future<void> refresh() => _fetch();

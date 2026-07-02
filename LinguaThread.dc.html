@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { background: #E2DFD8; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:0.6;transform:scaleY(0.5)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes flipIn { from{transform:perspective(800px) rotateY(-90deg)} to{transform:perspective(800px) rotateY(0deg)} }
+    @keyframes recordPulse { 0%,100%{box-shadow:0 0 0 0 rgba(229,62,62,0.4)} 70%{box-shadow:0 0 0 14px rgba(229,62,62,0)} }
+    .scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .scroll::-webkit-scrollbar { display: none; }
+  </style>
+</helmet>
+
+<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;">
+  <div style="width:390px;height:844px;background:#fff;border-radius:50px;overflow:hidden;box-shadow:0 50px 140px rgba(0,0,0,0.3), 0 0 0 10px #0F0F0F, 0 0 0 12px rgba(255,255,255,0.06);position:relative;display:flex;flex-direction:column;flex-shrink:0;">
+
+    <!-- Status bar -->
+    <div style="height:50px;background:#fff;padding:16px 24px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:20;">
+      <span style="font-size:15px;font-weight:700;color:#37352F;letter-spacing:-0.4px;font-variant-numeric:tabular-nums;">9:41</span>
+      <div style="width:118px;height:34px;background:#0F0F0F;border-radius:0 0 20px 20px;position:absolute;top:0;left:50%;transform:translateX(-50%);"></div>
+      {{ statusIcons }}
+    </div>
+
+    <!-- Screen content -->
+    <div style="flex:1;overflow:hidden;position:relative;">
+      {{ screenContent }}
+    </div>
+
+    <!-- Bottom nav -->
+    <div style="height:83px;background:#fff;border-top:1px solid #EDECE9;display:flex;align-items:flex-start;padding:7px 0 0;flex-shrink:0;position:relative;z-index:20;">
+      {{ navHome }}
+      {{ navExplore }}
+      {{ navCreate }}
+      {{ navNotif }}
+      {{ navProfile }}
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 430, &quot;height&quot;: 900 }
+}">
+class Component extends DCLogic {
+
+  // ── SHORTHAND ────────────────────────────────────────────────
+  E(tag, props, ...ch) { return React.createElement(tag, props, ...ch); }
+
+  // ── STATIC DATA ──────────────────────────────────────────────
+  threads = [
+    { id:'t1', emoji:'✍️', title:'IELTS Writing Task 2 Masterclass', desc:'Master academic essays — from thesis to advanced cohesion devices that examiners love.', creator:'Sarah Chen', handle:'@sarahchen', av:'SC', gemma:2840, level:'C1', lang:'English', nodeCount:8, enrolled:847, duration:'30 days', tags:['english','c1','writing','ielts'], progress:25,
+      nodes:[
+        { id:'n1', type:'vocab',      icon:'📖', title:'Academic Word List Vol.1',          done:true },
+        { id:'n2', type:'reading',    icon:'📄', title:'Understanding Essay Structure',       done:true },
+        { id:'n3', type:'writing',    icon:'✍️', title:'Introduction Paragraph Practice',    done:false, current:true },
+        { id:'n4', type:'quiz',       icon:'✅', title:'Coherence & Cohesion Quiz',           done:false },
+        { id:'n5', type:'speaking',   icon:'🎙️', title:'Oral Summary Task',                  done:false },
+        { id:'n6', type:'discussion', icon:'💬', title:'Share Your Essay Draft',              done:false },
+        { id:'n7', type:'fill',       icon:'✏️', title:'Linking Words Exercise',             done:false },
+        { id:'n8', type:'roleplay',   icon:'🎭', title:'Examiner Roleplay',                  done:false },
+      ]
+    },
+    { id:'t2', emoji:'🗣️', title:'Daily Japanese Conversation', desc:'Build real confidence speaking Japanese in everyday situations — from ordering food to making friends.', creator:'Yuki Tanaka', handle:'@yukitanaka', av:'YT', gemma:1560, level:'A2', lang:'Japanese', nodeCount:8, enrolled:312, duration:'2 weeks', tags:['japanese','a2','speaking','daily-life'], progress:0, nodes:[] },
+    { id:'t3', emoji:'💼', title:'100 Business English Phrases', desc:'The exact phrases top professionals use in meetings, emails, and high-stakes negotiations.', creator:'David Park', handle:'@davidpark', av:'DP', gemma:4200, level:'B2', lang:'English', nodeCount:20, enrolled:1203, duration:'6 weeks', tags:['english','b2','vocabulary','business'], progress:0, nodes:[] },
+    { id:'t4', emoji:'🌸', title:'Korean for K-Drama Lovers', desc:'Learn real spoken Korean through your favorite shows. No textbook, just natural immersion.', creator:'Mia Johnson', handle:'@miaj', av:'MJ', gemma:980, level:'A1', lang:'Korean', nodeCount:15, enrolled:543, duration:'3 weeks', tags:['korean','a1','speaking','culture'], progress:0, nodes:[] },
+  ];
+
+  posts = [
+    { id:'p1', creator:'Alex Rivera', handle:'@alexrivera', av:'AR', gemma:650, time:'2h', content:'"Nevertheless" and "nonetheless" are 100% interchangeable in IELTS writing. My examiner confirmed it last month. Hope this helps someone out there! 🎯', tags:['english','ielts','writing'], likes:142, comments:23, gemmaGifted:5 },
+    { id:'p2', creator:'Linh Nguyen', handle:'@linhlearn', av:'LN', gemma:1120, time:'4h', content:'Tip for Japanese learners: Stop translating in your head. Think in images instead. After 6 months of this practice, I started dreaming in Japanese 💤🇯🇵', tags:['japanese','speaking','tips'], likes:287, comments:41, gemmaGifted:18 },
+  ];
+
+  notifications = [
+    { id:'no1', type:'follow',  av:'SC', user:'Sarah Chen',   msg:'started following you',                                    time:'5m',  read:false },
+    { id:'no2', type:'gemma',   av:'YT', user:'Yuki Tanaka',  msg:'gifted you 5 ◆ Gemma',                                    time:'1h',  read:false },
+    { id:'no3', type:'comment', av:'DP', user:'David Park',   msg:'commented on your post about IELTS tips',                  time:'2h',  read:false },
+    { id:'no4', type:'streak',  av:null, user:null,           msg:'🔥 23-day streak! You\'re on fire — keep it going!',       time:'3h',  read:true  },
+    { id:'no5', type:'node',    av:'SC', user:'Sarah Chen',   msg:'added 2 new nodes to IELTS Writing Task 2 Masterclass',    time:'5h',  read:true  },
+    { id:'no6', type:'like',    av:'LN', user:'Linh Nguyen',  msg:'liked your post',                                          time:'6h',  read:true  },
+  ];
+
+  leaderboard = [
+    { rank:1, name:'Sarah Chen',   handle:'@sarahchen',  av:'SC', xp:12840, streak:67, badge:'👑' },
+    { rank:2, name:'David Park',   handle:'@davidpark',  av:'DP', xp:10200, streak:45, badge:'🌟' },
+    { rank:3, name:'Yuki Tanaka',  handle:'@yukitanaka', av:'YT', xp:9650,  streak:89, badge:'🔥' },
+    { rank:4, name:'Alex Tran',    handle:'@alextran',   av:'AT', xp:3420,  streak:23, badge:'✍️', isMe:true },
+    { rank:5, name:'Mia Johnson',  handle:'@miaj',       av:'MJ', xp:2890,  streak:12, badge:'🎓' },
+    { rank:6, name:'Linh Nguyen',  handle:'@linhlearn',  av:'LN', xp:2340,  streak:8,  badge:'💪' },
+    { rank:7, name:'Carlos Ruiz',  handle:'@carlosruiz', av:'CR', xp:1980,  streak:5,  badge:null },
+    { rank:8, name:'Emma Wilson',  handle:'@emmaw',      av:'EW', xp:1560,  streak:3,  badge:null },
+  ];
+
+  user = { name:'Alex Tran', handle:'@alextran', av:'AT', level:12, xp:3420, xpNext:4000, streak:23, earnedGemma:1840, giftedGemma:65, badges:['🔥','✍️','🌟','👑','🎓'], threadsCreated:3, enrolled:7, posts:28, following:124, followers:89, bio:'IELTS 8.0 · Language learner & creator. Currently grinding 日本語 🇯🇵' };
+
+  vocabCards = [
+    { word:'NEVERTHELESS', part:'adv.', def:'In spite of that; notwithstanding; however.', example:'The results were disappointing; nevertheless, the team continued their efforts with full dedication.', level:'C1' },
+    { word:'COHERENT', part:'adj.', def:'Forming a unified whole; logical and consistent in argument.', example:'Her essay was coherent and well-structured throughout.', level:'B2' },
+    { word:'SUBSTANTIATE', part:'verb', def:'To provide evidence to support or prove the truth of a claim.', example:'Can you substantiate this assertion with concrete data?', level:'C1' },
+    { word:'MITIGATE', part:'verb', def:'To make less severe, serious, or painful.', example:'Authorities took measures to mitigate the environmental risks.', level:'C1' },
+  ];
+
+  waveHeights = Array.from({length:22}, () => Math.random() * 30 + 8);
+  recordingTimer = null;
+
+  // ── STATE ────────────────────────────────────────────────────
+  state = {
+    tab:'home', screen:'feed', screenParams:{}, history:[],
+    feedFilter:'for-you', likedPosts:[],
+    searchQuery:'', searchFocused:false, exploreLang:'all',
+    createText:'', isThread:false, threadTitle:'', threadLevel:'B1', selectedLang:'English', selectedTags:[],
+    cardFlipped:false, vocabIndex:0,
+    quizSelected:null, quizSubmitted:false,
+    recordState:'idle', recSeconds:0,
+    writingText:'', aiChecked:false,
+    discussionInput:'',
+    discussionPosts:[
+      { av:'SC', name:'Sarah Chen', text:"I believe technology has made us more isolated — we interact through screens rather than face to face.", likes:12, liked:false },
+      { av:'DP', name:'David Park', text:"I agree, but tech also connects people across distances. My pen pal in France became my best friend thanks to the internet!", likes:8, liked:false },
+    ],
+    roleplayMessages:[
+      { role:'ai', text:"Hello! I'm your IELTS Speaking examiner today. Are you ready to begin? I'll start with some questions about your daily life." },
+    ],
+    roleplayInput:'',
+    fillAnswers:['','',''],
+    fillChecked:false,
+    enrolledThreads:['t1'],
+    showEnroll:false, enrollTarget:null,
+    profileTab:'threads',
+    lbFilter:'weekly',
+    readNotifs:[],
+  };
+
+  componentWillUnmount() {
+    if (this.recordingTimer) clearInterval(this.recordingTimer);
+  }
+
+  // ── NAVIGATION ───────────────────────────────────────────────
+  nav(screen, params = {}) {
+    if (this.recordingTimer) { clearInterval(this.recordingTimer); this.recordingTimer = null; }
+    this.setState(s => ({
+      screen, screenParams:params,
+      history:[...s.history, { screen:s.screen, screenParams:s.screenParams }],
+      cardFlipped:false, quizSelected:null, quizSubmitted:false,
+      recordState:'idle', recSeconds:0, aiChecked:false, fillChecked:false,
+    }));
+  }
+
+  back() {
+    this.setState(s => {
+      const history = [...s.history];
+      const prev = history.pop();
+      return prev ? { screen:prev.screen, screenParams:prev.screenParams, history } : {};
+    });
+  }
+
+  goTab(t) {
+    if (this.recordingTimer) { clearInterval(this.recordingTimer); this.recordingTimer = null; }
+    const map = { home:'feed', explore:'explore', create:'create', notif:'notif', profile:'profile' };
+    this.setState({ tab:t, screen:map[t], screenParams:{}, history:[], recordState:'idle' });
+  }
+
+  // ── UI ATOMS ─────────────────────────────────────────────────
+  Avatar(init, size=36) {
+    const palette = { SC:'#EFE5D5', YT:'#D5E5EF', DP:'#D5EFDA', MJ:'#EFD5E5', LN:'#EFEDD5', AR:'#D5EFED', AT:'#EDE8D5', CR:'#E5D5EF', EW:'#D5EFDF' };
+    return this.E('div', { style:{ width:size, height:size, borderRadius:'50%', background:palette[init]||'#E8E7E3', display:'flex', alignItems:'center', justifyContent:'center', fontSize:size*0.33, fontWeight:700, color:'#37352F', flexShrink:0, letterSpacing:'-0.5px' } }, init);
+  }
+
+  Tag(text) {
+    return this.E('span', { key:text, style:{ display:'inline-flex', alignItems:'center', padding:'2px 7px', background:'#F1F0EF', borderRadius:3, fontSize:11, color:'#787774', fontWeight:500 } }, '#'+text);
+  }
+
+  GemmaChip(count, size='sm') {
+    const big = size === 'lg';
+    return this.E('span', { style:{ display:'inline-flex', alignItems:'center', gap:3, padding:big?'3px 8px':'2px 7px', background:'#FEF9EC', borderRadius:3, fontSize:big?13:11, color:'#A37010', fontWeight:700 } }, this.E('span',{style:{fontSize:big?11:9}},'◆'), count.toLocaleString());
+  }
+
+  LevelBadge(level) {
+    const bg   = { A1:'#E8F5E8', A2:'#E8F5E8', B1:'#EAF2FB', B2:'#EAF2FB', C1:'#F3ECF9', C2:'#F3ECF9' };
+    const clr  = { A1:'#1E6B1E', A2:'#1E6B1E', B1:'#1A4E8F', B2:'#1A4E8F', C1:'#5E2F8F', C2:'#5E2F8F' };
+    return this.E('span', { style:{ padding:'2px 7px', background:bg[level]||'#F1F0EF', borderRadius:3, fontSize:11, fontWeight:700, color:clr[level]||'#787774' } }, level);
+  }
+
+  NodeBadge(type) {
+    const labels = { vocab:'Vocabulary', quiz:'Quiz', writing:'Writing Task', speaking:'Speaking Task', discussion:'Discussion', fill:'Fill in Blank', roleplay:'Roleplay', reading:'Reading', grammar:'Grammar' };
+    return this.E('span', { style:{ padding:'2px 7px', background:'#F7F6F3', borderRadius:3, fontSize:10, fontWeight:500, color:'#9B9A97', border:'1px solid #EDECE9' } }, labels[type]||type);
+  }
+
+  Divider(mt=0) { return this.E('div', { style:{ height:1, background:'#EDECE9', marginTop:mt } }); }
+
+  BackBar(title, right) {
+    return this.E('div', { style:{ display:'flex', alignItems:'center', gap:8, padding:'12px 16px', borderBottom:'1px solid #EDECE9', background:'#fff', flexShrink:0 } },
+      this.E('div', { onClick:()=>this.back(), style:{ width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', borderRadius:6, flexShrink:0 } },
+        this.E('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'#37352F',strokeWidth:2.5,strokeLinecap:'round',strokeLinejoin:'round'},
+          this.E('path',{d:'M19 12H5'},''),this.E('path',{d:'M12 5l-7 7 7 7'},'')
+        )
+      ),
+      title ? this.E('span',{style:{fontSize:15,fontWeight:600,color:'#37352F',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},title) : this.E('div',{style:{flex:1}}),
+      right||null
+    );
+  }
+
+  Pill(text, active, onClick) {
+    return this.E('div',{ key:text, onClick, style:{ padding:'6px 14px', borderRadius:20, fontSize:13, fontWeight:500, cursor:'pointer', flexShrink:0, background:active?'#37352F':'transparent', color:active?'#fff':'#787774', border:active?'none':'1px solid #EDECE9', transition:'all 0.15s' } }, text);
+  }
+
+  // ── SCREEN: FEED ─────────────────────────────────────────────
+  renderFeed() {
+    const s = this.state;
+    const EnrolledBanner = () => {
+      const t = this.threads[0];
+      return this.E('div',{onClick:()=>this.nav('thread-detail',{threadId:'t1'}),style:{margin:'12px 16px 0',padding:'12px 14px',background:'#FBFBFA',border:'1px solid #EDECE9',borderRadius:6,cursor:'pointer',display:'flex',alignItems:'center',gap:10}},
+        this.E('div',{style:{fontSize:22}},t.emoji),
+        this.E('div',{style:{flex:1,minWidth:0}},
+          this.E('div',{style:{fontSize:12,color:'#787774',marginBottom:2}},'Continue learning'),
+          this.E('div',{style:{fontSize:14,fontWeight:600,color:'#37352F',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},'Node 3 · '+t.nodes[2].title),
+          this.E('div',{style:{height:3,background:'#EDECE9',borderRadius:2,marginTop:6,overflow:'hidden'}},
+            this.E('div',{style:{height:'100%',width:t.progress+'%',background:'#37352F',borderRadius:2}})
+          )
+        ),
+        this.E('div',{style:{padding:'6px 12px',background:'#37352F',color:'#fff',borderRadius:4,fontSize:12,fontWeight:600,flexShrink:0}},'▶')
+      );
+    };
+    const ThreadCard = (t) => {
+      const enrolled = s.enrolledThreads.includes(t.id);
+      return this.E('div',{key:t.id,style:{padding:'16px',borderBottom:'1px solid #EDECE9',background:'#fff',cursor:'pointer'},onClick:()=>this.nav('thread-detail',{threadId:t.id})},
+        this.E('div',{style:{display:'flex',gap:12,alignItems:'flex-start'}},
+          this.E('div',{style:{width:44,height:44,background:'#F7F6F3',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0,border:'1px solid #EDECE9'}},t.emoji),
+          this.E('div',{style:{flex:1,minWidth:0}},
+            this.E('div',{style:{display:'flex',alignItems:'center',gap:5,marginBottom:4}},this.LevelBadge(t.level),this.E('span',{style:{fontSize:11,color:'#9B9A97'}},t.lang)),
+            this.E('div',{style:{fontSize:15,fontWeight:600,color:'#37352F',lineHeight:1.3,marginBottom:5}},t.title),
+            this.E('div',{style:{display:'flex',alignItems:'center',gap:6}},this.Avatar(t.av,16),this.E('span',{style:{fontSize:12,color:'#787774'}},t.creator),this.GemmaChip(t.gemma))
+          )
+        ),
+        this.E('div',{style:{fontSize:13,color:'#787774',lineHeight:1.55,margin:'10px 0 10px 56px'}}),
+        this.E('div',{style:{display:'flex',alignItems:'center',gap:14,marginLeft:56,marginBottom:10}},
+          this.E('span',{style:{fontSize:12,color:'#9B9A97'}},'👥 '+t.enrolled.toLocaleString()),
+          this.E('span',{style:{fontSize:12,color:'#9B9A97'}},'⬡ '+t.nodeCount+' nodes'),
+          this.E('span',{style:{fontSize:12,color:'#9B9A97'}},'⏱ '+t.duration)
+        ),
+        enrolled && t.progress>0 ? this.E('div',{style:{marginLeft:56,marginBottom:10}},
+          this.E('div',{style:{height:3,background:'#EDECE9',borderRadius:2,overflow:'hidden'}},
+            this.E('div',{style:{height:'100%',width:t.progress+'%',background:'#37352F',borderRadius:2}})
+          ),
+          this.E('span',{style:{fontSize:11,color:'#9B9A97',marginTop:3,display:'block'}},t.progress+'% · Node 3 of '+t.nodeCount)
+        ):null,
+        this.E('div',{style:{display:'flex',gap:5,flexWrap:'wrap',marginLeft:56,marginBottom:12}},t.tags.map(tg=>this.Tag(tg))),
+        this.E('div',{style:{marginLeft:56}},
+          this.E('button',{onClick:e=>{e.stopPropagation();enrolled?this.nav('thread-detail',{threadId:t.id}):this.setState({showEnroll:true,enrollTarget:t.id});},style:{padding:'8px 16px',background:enrolled?'#F7F6F3':'#37352F',color:enrolled?'#37352F':'#fff',borderRadius:4,fontSize:13,fontWeight:600,border:enrolled?'1px solid #EDECE9':'none',cursor:'pointer'}},enrolled?(t.progress>0?'▶  Continue':'▶  Start'):'+  Join Thread')
+        )
+      );
+    };
+    const PostCard = (p) => {
+      const liked = s.likedPosts.includes(p.id);
+      return this.E('div',{key:p.id,style:{padding:'16px',borderBottom:'1px solid #EDECE9',background:'#fff'}},
+        this.E('div',{style:{display:'flex',gap:10,marginBottom:10}},
+          this.Avatar(p.av),
+          this.E('div',{style:{flex:1,minWidth:0}},
+            this.E('div',{style:{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}},
+              this.E('span',{style:{fontSize:14,fontWeight:600,color:'#37352F'}},p.creator),
+              this.GemmaChip(p.gemma),
+              this.E('span',{style:{fontSize:12,color:'#9B9A97',marginLeft:'auto'}},p.time)
+            ),
+            this.E('span',{style:{fontSize:12,color:'#9B9A97'}},p.handle)
+          )
+        ),
+        this.E('div',{style:{fontSize:14,color:'#37352F',lineHeight:1.65,marginBottom:10}},p.content),
+        this.E('div',{style:{display:'flex',gap:5,marginBottom:12}},p.tags.map(tg=>this.Tag(tg))),
+        this.E('div',{style:{display:'flex',gap:20,alignItems:'center'}},
+          this.E('div',{onClick:()=>this.setState(st=>{const l=[...st.likedPosts];const i=l.indexOf(p.id);i>=0?l.splice(i,1):l.push(p.id);return{likedPosts:l};}),style:{display:'flex',alignItems:'center',gap:5,cursor:'pointer'}},
+            this.E('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:liked?'#37352F':'none',stroke:'#37352F',strokeWidth:2},this.E('path',{d:'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'},'')
+            ),
+            this.E('span',{style:{fontSize:13,color:'#787774'}},p.likes+(liked?1:0))
+          ),
+          this.E('div',{style:{display:'flex',alignItems:'center',gap:5,cursor:'pointer'}},
+            this.E('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'#9B9A97',strokeWidth:2},this.E('path',{d:'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'},'')
+            ),
+            this.E('span',{style:{fontSize:13,color:'#787774'}},p.comments)
+          ),
+          this.E('div',{style:{display:'flex',alignItems:'center',gap:4,cursor:'pointer',marginLeft:'auto'}},
+            this.E('span',{style:{fontSize:10,color:'#A37010'}},'◆'),
+            this.E('span',{style:{fontSize:13,color:'#787774'}},'Gift Gemma')
+          )
+        )
+      );
+    };
+    const items = [this.threads[0], this.posts[0], this.threads[1], this.posts[1], this.threads[2], this.threads[3]];
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.E('div',{style:{padding:'14px 16px 10px',background:'#fff',borderBottom:'1px solid #EDECE9',flexShrink:0}},
+        this.E('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}},
+          this.E('div',{style:{display:'flex',alignItems:'center',gap:10}},
+            this.E('span',{style:{fontSize:18,fontWeight:700,color:'#37352F',letterSpacing:'-0.5px'}},'LinguaThread'),
+            this.E('span',{style:{display:'inline-flex',alignItems:'center',gap:3,padding:'2px 8px',background:'#FEF4EF',borderRadius:3,fontSize:12,color:'#C2410C',fontWeight:600}},'🔥 ',this.user.streak,' days')
+          ),
+          this.E('div',{style:{width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',borderRadius:6}},
+            this.E('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'#37352F',strokeWidth:2},this.E('circle',{cx:11,cy:11,r:8},''),this.E('line',{x1:21,y1:21,x2:16.65,y2:16.65},''))
+          )
+        ),
+        this.E('div',{style:{display:'flex',gap:6,overflowX:'auto',scrollbarWidth:'none'}},
+          ['for-you','following','🧵 Threads','📝 Posts'].map((f,i)=>this.Pill(f, s.feedFilter===['for-you','following','🧵 Threads','📝 Posts'][i], ()=>this.setState({feedFilter:['for-you','following','🧵 Threads','📝 Posts'][i]})))
+        )
+      ),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto'}},
+        EnrolledBanner(),
+        ...items.map(item=>item.content?PostCard(item):ThreadCard(item)),
+        this.E('div',{style:{height:20}})
+      )
+    );
+  }
+
+  // ── SCREEN: EXPLORE ──────────────────────────────────────────
+  renderExplore() {
+    const s = this.state;
+    const langs = ['all','English','Japanese','Korean','French','Spanish'];
+    const results = s.searchQuery ? this.threads.filter(t=>t.title.toLowerCase().includes(s.searchQuery.toLowerCase())||t.lang.toLowerCase().includes(s.searchQuery.toLowerCase())) : [];
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.E('div',{style:{padding:'12px 16px',background:'#fff',borderBottom:'1px solid #EDECE9',flexShrink:0}},
+        this.E('div',{style:{display:'flex',alignItems:'center',gap:8,background:'#F7F6F3',borderRadius:6,padding:'10px 12px',border:'1px solid '+(s.searchFocused?'#37352F':'transparent'),transition:'border 0.15s'}},
+          this.E('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'#787774',strokeWidth:2},this.E('circle',{cx:11,cy:11,r:8},''),this.E('line',{x1:21,y1:21,x2:16.65,y2:16.65},'')),
+          this.E('input',{value:s.searchQuery,onChange:e=>this.setState({searchQuery:e.target.value}),onFocus:()=>this.setState({searchFocused:true}),onBlur:()=>this.setState({searchFocused:false}),placeholder:'Search threads, topics, creators…',style:{flex:1,border:'none',background:'transparent',fontSize:14,color:'#37352F',outline:'none',fontFamily:'inherit'}}),
+          s.searchQuery?this.E('div',{onClick:()=>this.setState({searchQuery:''}),style:{cursor:'pointer',color:'#9B9A97',fontSize:18,lineHeight:1}},'+'):null
+        ),
+        this.E('div',{style:{display:'flex',gap:6,marginTop:10,overflowX:'auto',scrollbarWidth:'none'}},
+          langs.map(l=>this.E('div',{key:l,onClick:()=>this.setState({exploreLang:l}),style:{padding:'5px 12px',borderRadius:20,fontSize:12,fontWeight:500,cursor:'pointer',flexShrink:0,background:s.exploreLang===l?'#37352F':'#F7F6F3',color:s.exploreLang===l?'#fff':'#787774',border:'1px solid #EDECE9',transition:'all 0.15s'}},l==='all'?'All Languages':l))
+        )
+      ),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto'}},
+        s.searchQuery ? (results.length?this.E('div',null,
+          this.E('div',{style:{padding:'12px 16px 6px',fontSize:11,fontWeight:700,color:'#9B9A97',textTransform:'uppercase',letterSpacing:'0.8px'}},results.length+' results for "'+s.searchQuery+'"'),
+          ...results.map(t=>this.E('div',{key:t.id,onClick:()=>this.nav('thread-detail',{threadId:t.id}),style:{display:'flex',gap:12,padding:'14px 16px',borderBottom:'1px solid #EDECE9',cursor:'pointer'}},
+            this.E('div',{style:{width:40,height:40,background:'#F7F6F3',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}},t.emoji),
+            this.E('div',{style:{flex:1}},
+              this.E('div',{style:{fontSize:14,fontWeight:600,color:'#37352F',marginBottom:4}},t.title),
+              this.E('div',{style:{display:'flex',alignItems:'center',gap:6}},this.LevelBadge(t.level),this.E('span',{style:{fontSize:12,color:'#9B9A97'}},t.lang+' · '+t.enrolled.toLocaleString()+' enrolled'))
+            )
+          ))
+        ):this.E('div',{style:{padding:40,textAlign:'center',color:'#9B9A97',fontSize:14}},'No results for "'+s.searchQuery+'"'))
+        :
+        this.E('div',null,
+          this.E('div',{style:{padding:'16px 16px 8px'}},
+            this.E('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}},
+              this.E('span',{style:{fontSize:14,fontWeight:700,color:'#37352F'}},'🔥 Trending Threads'),
+              this.E('span',{style:{fontSize:13,color:'#787774',cursor:'pointer'}},'See all')
+            )
+          ),
+          ...this.threads.slice(0,3).map(t=>this.E('div',{key:t.id,onClick:()=>this.nav('thread-detail',{threadId:t.id}),style:{display:'flex',gap:12,padding:'12px 16px',borderBottom:'1px solid #EDECE9',cursor:'pointer'}},
+            this.E('div',{style:{width:40,height:40,background:'#F7F6F3',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}},t.emoji),
+            this.E('div',{style:{flex:1,minWidth:0}},
+              this.E('div',{style:{display:'flex',alignItems:'center',gap:5,marginBottom:3}},this.LevelBadge(t.level),this.E('span',{style:{fontSize:11,color:'#9B9A97'}},t.lang)),
+              this.E('div',{style:{fontSize:14,fontWeight:600,color:'#37352F',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},t.title),
+              this.E('span',{style:{fontSize:12,color:'#9B9A97'}},t.enrolled.toLocaleString()+' enrolled · '+t.nodeCount+' nodes')
+            )
+          )),
+          this.E('div',{onClick:()=>this.nav('leaderboard'),style:{margin:'12px 16px',padding:'14px',background:'#FBFBFA',borderRadius:6,border:'1px solid #EDECE9',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between'}},
+            this.E('div',null,
+              this.E('div',{style:{fontSize:14,fontWeight:700,color:'#37352F',marginBottom:2}},'🏆 Weekly Leaderboard'),
+              this.E('div',{style:{fontSize:12,color:'#787774'}},'You\'re ranked #4 this week · 3,420 XP')
+            ),
+            this.E('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'#9B9A97',strokeWidth:2},this.E('polyline',{points:'9 18 15 12 9 6'},''))
+          ),
+          this.E('div',{style:{padding:'4px 16px 12px'}},
+            this.E('div',{style:{fontSize:14,fontWeight:700,color:'#37352F',marginBottom:12}},'⭐ Top Creators'),
+            this.E('div',{style:{display:'flex',gap:12,overflowX:'auto',scrollbarWidth:'none',paddingBottom:4}},
+              this.leaderboard.slice(0,5).map(u=>this.E('div',{key:u.handle,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:5,flexShrink:0,width:68,cursor:'pointer'}},
+                this.Avatar(u.av,44),
+                this.E('div',{style:{fontSize:11,fontWeight:600,color:'#37352F',textAlign:'center',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',width:'100%'}},u.name.split(' ')[0]),
+                this.GemmaChip(u.xp)
+              ))
+            )
+          ),
+          this.E('div',{style:{height:20}})
+        )
+      )
+    );
+  }
+
+  // ── SCREEN: THREAD DETAIL ────────────────────────────────────
+  renderThreadDetail() {
+    const s = this.state;
+    const thread = this.threads.find(t=>t.id===s.screenParams.threadId)||this.threads[0];
+    const enrolled = s.enrolledThreads.includes(thread.id);
+    const nodeScreenMap = { vocab:'node-vocab', quiz:'node-quiz', writing:'node-writing', speaking:'node-speaking', discussion:'node-discussion', fill:'node-fill', roleplay:'node-roleplay' };
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.BackBar(null,
+        this.E('div',{style:{marginLeft:'auto',width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',borderRadius:6}},
+          this.E('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'#37352F',strokeWidth:2},
+            this.E('circle',{cx:18,cy:5,r:3},''),this.E('circle',{cx:6,cy:12,r:3},''),this.E('circle',{cx:18,cy:19,r:3},''),
+            this.E('line',{x1:8.59,y1:13.51,x2:15.42,y2:17.49},''),this.E('line',{x1:15.41,y1:6.51,x2:8.59,y2:10.49},'')
+          )
+        )
+      ),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto'}},
+        this.E('div',{style:{padding:'20px 16px 16px',borderBottom:'1px solid #EDECE9'}},
+          this.E('div',{style:{width:56,height:56,background:'#F7F6F3',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,marginBottom:12,border:'1px solid #EDECE9'}},thread.emoji),
+          this.E('h1',{style:{fontSize:20,fontWeight:700,color:'#37352F',lineHeight:1.3,marginBottom:8,margin:'0 0 8px'}},thread.title),
+          this.E('p',{style:{fontSize:14,color:'#787774',lineHeight:1.6,margin:'0 0 14px'}},thread.desc),
+          this.E('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:14}},
+            this.Avatar(thread.av,28),
+            this.E('div',{style:{flex:1}},
+              this.E('span',{style:{fontSize:13,fontWeight:600,color:'#37352F'}},thread.creator),
+              this.E('span',{style:{fontSize:12,color:'#9B9A97',marginLeft:6}},thread.handle)
+            ),
+            this.GemmaChip(thread.gemma),
+            this.E('button',{style:{padding:'5px 10px',background:'#FEF9EC',color:'#A37010',borderRadius:4,fontSize:12,fontWeight:600,border:'1px solid #F5E0A0',cursor:'pointer'}},'◆ Tip')
+          ),
+          this.E('div',{style:{display:'flex',flexWrap:'wrap',gap:5,marginBottom:12}},
+            this.LevelBadge(thread.level),
+            this.E('span',{style:{padding:'2px 7px',background:'#F1F0EF',borderRadius:3,fontSize:11,fontWeight:500,color:'#787774'}},'🌐 '+thread.lang),
+            this.E('span',{style:{padding:'2px 7px',background:'#F1F0EF',borderRadius:3,fontSize:11,fontWeight:500,color:'#787774'}},'⬡ '+thread.nodeCount+' nodes'),
+            this.E('span',{style:{padding:'2px 7px',background:'#F1F0EF',borderRadius:3,fontSize:11,fontWeight:500,color:'#787774'}},'⏱ '+thread.duration),
+            this.E('span',{style:{padding:'2px 7px',background:'#F1F0EF',borderRadius:3,fontSize:11,fontWeight:500,color:'#787774'}},'👥 '+thread.enrolled.toLocaleString())
+          ),
+          enrolled&&thread.progress>0?this.E('div',null,
+            this.E('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:5}},
+              this.E('span',{style:{fontSize:12,fontWeight:600,color:'#37352F'}},'Your Progress'),
+              this.E('span',{style:{fontSize:12,color:'#787774'}},thread.progress+'%')
+            ),
+            this.E('div',{style:{height:5,background:'#EDECE9',borderRadius:3,overflow:'hidden'}},
+              this.E('div',{style:{height:'100%',width:thread.progress+'%',background:'#37352F',borderRadius:3}})
+            )
+          ):null
+        ),
+        this.E('div',{style:{padding:'16px 16px 4px',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+          this.E('span',{style:{fontSize:14,fontWeight:700,color:'#37352F'}},'Learning Path'),
+          this.E('span',{style:{fontSize:12,color:'#9B9A97'}},thread.nodeCount+' nodes')
+        ),
+        ...thread.nodes.map((node,i)=>this.E('div',{key:node.id,onClick:()=>enrolled?this.nav(nodeScreenMap[node.type]||'node-vocab',{nodeId:node.id,threadId:thread.id}):null,style:{display:'flex',alignItems:'center',gap:12,padding:'12px 16px',borderBottom:'1px solid #EDECE9',cursor:enrolled?'pointer':'default',background:node.current?'#FAFAFA':'#fff',opacity:enrolled||node.done?1:0.55}},
+          this.E('div',{style:{width:28,height:28,borderRadius:'50%',background:node.done?'#37352F':node.current?'transparent':'#F7F6F3',border:node.done?'none':node.current?'2px solid #37352F':'1px solid #EDECE9',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
+            node.done?this.E('svg',{width:13,height:13,viewBox:'0 0 24 24',fill:'none',stroke:'#fff',strokeWidth:3,strokeLinecap:'round'},this.E('polyline',{points:'20 6 9 17 4 12'},'')):this.E('span',{style:{fontSize:11,fontWeight:600,color:node.current?'#37352F':'#9B9A97'}},i+1)
+          ),
+          this.E('div',{style:{flex:1,minWidth:0}},
+            this.E('div',{style:{fontSize:14,fontWeight:node.current?600:400,color:node.done?'#9B9A97':'#37352F',marginBottom:4}},node.title),
+            this.E('div',{style:{display:'flex',alignItems:'center',gap:6}},this.NodeBadge(node.type),node.done?this.E('span',{style:{fontSize:11,color:'#27AE60',fontWeight:600}},'✓ Done'):null)
+          ),
+          node.current?this.E('div',{style:{width:7,height:7,borderRadius:'50%',background:'#37352F',flexShrink:0}}):null
+        )),
+        this.E('div',{style:{height:90}})
+      ),
+      this.E('div',{style:{padding:'12px 16px',background:'#fff',borderTop:'1px solid #EDECE9',flexShrink:0}},
+        this.E('button',{onClick:()=>enrolled?this.nav('node-vocab',{nodeId:'n3',threadId:thread.id}):this.setState({showEnroll:true,enrollTarget:thread.id}),style:{width:'100%',padding:'14px',background:'#37352F',color:'#fff',borderRadius:4,fontSize:15,fontWeight:700,border:'none',cursor:'pointer'}},enrolled?(thread.progress>0?'▶  Continue Learning':'▶  Start Learning'):'+  Join Thread — Free')
+      )
+    );
+  }
+
+  // ── NODE: VOCABULARY ─────────────────────────────────────────
+  renderNodeVocab() {
+    const s = this.state;
+    const card = this.vocabCards[s.vocabIndex];
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.BackBar('Academic Word List Vol.1',
+        this.E('span',{style:{fontSize:12,color:'#787774',marginLeft:'auto'}},(s.vocabIndex+1)+'/'+this.vocabCards.length)
+      ),
+      this.E('div',{style:{height:3,background:'#EDECE9',flexShrink:0}},
+        this.E('div',{style:{height:'100%',width:((s.vocabIndex+1)/this.vocabCards.length*100)+'%',background:'#37352F',transition:'width 0.3s'}})
+      ),
+      this.E('div',{style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px 20px',background:'#FBFBFA'}},
+        this.E('div',{style:{fontSize:11,color:'#9B9A97',marginBottom:10,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.8px'}},'Tap card to flip'),
+        this.E('div',{onClick:()=>this.setState(st=>({cardFlipped:!st.cardFlipped})),style:{width:'100%',perspective:1000,cursor:'pointer'}},
+          this.E('div',{style:{position:'relative',width:'100%',height:270,transition:'transform 0.5s cubic-bezier(0.4,0,0.2,1)',transformStyle:'preserve-3d',transform:s.cardFlipped?'rotateY(180deg)':'rotateY(0deg)'}},
+            this.E('div',{style:{position:'absolute',inset:0,background:'#fff',borderRadius:8,border:'1px solid #EDECE9',backfaceVisibility:'hidden',WebkitBackfaceVisibility:'hidden',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:28,boxShadow:'0 2px 16px rgba(0,0,0,0.06)'}},
+              this.LevelBadge(card.level),
+              this.E('div',{style:{fontSize:30,fontWeight:700,color:'#37352F',letterSpacing:'-1px',marginTop:14,marginBottom:6,textAlign:'center'}},card.word),
+              this.E('div',{style:{fontSize:15,color:'#9B9A97',fontStyle:'italic',marginBottom:18}},card.part),
+              this.E('div',{style:{width:40,height:1,background:'#EDECE9'}}),
+              this.E('div',{style:{fontSize:12,color:'#9B9A97',marginTop:14}},'🔊  Tap to hear · Tap card to flip')
+            ),
+            this.E('div',{style:{position:'absolute',inset:0,background:'#37352F',borderRadius:8,backfaceVisibility:'hidden',WebkitBackfaceVisibility:'hidden',transform:'rotateY(180deg)',display:'flex',flexDirection:'column',padding:24,boxShadow:'0 4px 24px rgba(0,0,0,0.15)'}},
+              this.E('div',{style:{fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:8}},'DEFINITION'),
+              this.E('div',{style:{fontSize:17,fontWeight:600,color:'#fff',lineHeight:1.5,marginBottom:14}},card.def),
+              this.E('div',{style:{height:1,background:'rgba(255,255,255,0.12)',marginBottom:12}}),
+              this.E('div',{style:{fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:8}},'EXAMPLE SENTENCE'),
+              this.E('div',{style:{fontSize:14,color:'rgba(255,255,255,0.8)',lineHeight:1.65,fontStyle:'italic'}},'"'+card.example+'"')
+            )
+          )
+        ),
+        this.E('div',{style:{display:'flex',gap:10,marginTop:20,width:'100%'}},
+          this.E('button',{onClick:()=>this.setState(st=>({vocabIndex:Math.max(0,st.vocabIndex-1),cardFlipped:false})),disabled:s.vocabIndex===0,style:{flex:1,padding:'11px',background:'#F7F6F3',color:s.vocabIndex===0?'#AEACA7':'#37352F',borderRadius:4,fontSize:14,fontWeight:600,border:'1px solid #EDECE9',cursor:s.vocabIndex===0?'default':'pointer'}},'← Prev'),
+          this.E('button',{onClick:()=>this.setState(st=>({vocabIndex:Math.min(this.vocabCards.length-1,st.vocabIndex+1),cardFlipped:false})),style:{flex:2,padding:'11px',background:'#37352F',color:'#fff',borderRadius:4,fontSize:14,fontWeight:600,border:'none',cursor:'pointer'}},s.vocabIndex===this.vocabCards.length-1?'✓  Finish':'Next →')
+        )
+      )
+    );
+  }
+
+  // ── NODE: QUIZ ───────────────────────────────────────────────
+  renderNodeQuiz() {
+    const s = this.state;
+    const quiz = { question:'Which sentence correctly uses "nevertheless" to show contrast?', options:['She was tired; nevertheless, she finished the report.','She was tired, nevertheless she was happy too.','Nevertheless she was tired from work.','She was nevertheless tired from the long journey.'], correct:0, explanation:'"Nevertheless" is a conjunctive adverb. It follows a semicolon and is followed by a comma when connecting two independent clauses.' };
+    const getOBg   = i => !s.quizSubmitted?(s.quizSelected===i?'#37352F':'#fff'):(i===quiz.correct?'#E8F5E8':(i===s.quizSelected&&s.quizSelected!==quiz.correct?'#FDEEEE':'#fff'));
+    const getOClr  = i => !s.quizSubmitted?(s.quizSelected===i?'#fff':'#37352F'):(i===quiz.correct?'#1A5C1A':(i===s.quizSelected&&s.quizSelected!==quiz.correct?'#8B1A1A':'#787774'));
+    const getOBord = i => !s.quizSubmitted?(s.quizSelected===i?'none':'1px solid #EDECE9'):(i===quiz.correct?'1px solid #A8D8A8':(i===s.quizSelected&&s.quizSelected!==quiz.correct?'1px solid #F5B8B8':'1px solid #EDECE9'));
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.BackBar('Coherence & Cohesion Quiz',this.E('span',{style:{fontSize:12,color:'#787774',marginLeft:'auto'}},'Q1 / 5')),
+      this.E('div',{style:{height:3,background:'#EDECE9',flexShrink:0}},this.E('div',{style:{height:'100%',width:'20%',background:'#37352F'}})),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto',padding:'24px 16px'}},
+        this.E('div',{style:{fontSize:11,fontWeight:700,color:'#9B9A97',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:12}},'Multiple Choice'),
+        this.E('div',{style:{fontSize:16,fontWeight:600,color:'#37352F',lineHeight:1.6,marginBottom:22}},quiz.question),
+        ...quiz.options.map((opt,i)=>this.E('div',{key:i,onClick:()=>!s.quizSubmitted&&this.setState({quizSelected:i}),style:{display:'flex',alignItems:'flex-start',gap:12,padding:'13px 14px',marginBottom:8,background:getOBg(i),border:getOBord(i),borderRadius:6,cursor:s.quizSubmitted?'default':'pointer',transition:'all 0.15s'}},
+          this.E('div',{style:{width:22,height:22,borderRadius:'50%',background:s.quizSelected===i&&!s.quizSubmitted?'rgba(255,255,255,0.15)':'#F1F0EF',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:11,fontWeight:700,color:getOClr(i)}},String.fromCharCode(65+i)),
+          this.E('span',{style:{fontSize:14,color:getOClr(i),lineHeight:1.5,flex:1}},opt),
+          s.quizSubmitted&&i===quiz.correct?this.E('span',{style:{color:'#1A5C1A',fontSize:16,flexShrink:0}},'✓'):null,
+          s.quizSubmitted&&i===s.quizSelected&&s.quizSelected!==quiz.correct?this.E('span',{style:{color:'#8B1A1A',fontSize:14,flexShrink:0}},'✗'):null
+        )),
+        s.quizSubmitted?this.E('div',{style:{padding:'14px',background:'#F7F6F3',borderRadius:6,border:'1px solid #EDECE9',marginTop:6}},
+          this.E('div',{style:{fontSize:12,fontWeight:700,color:'#37352F',textTransform:'uppercase',letterSpacing:'0.5px',marginBottom:8}},'💡 Explanation'),
+          this.E('div',{style:{fontSize:14,color:'#37352F',lineHeight:1.65}},quiz.explanation)
+        ):null
+      ),
+      this.E('div',{style:{padding:'12px 16px',background:'#fff',borderTop:'1px solid #EDECE9',flexShrink:0}},
+        !s.quizSubmitted?this.E('button',{onClick:()=>s.quizSelected!==null&&this.setState({quizSubmitted:true}),disabled:s.quizSelected===null,style:{width:'100%',padding:'13px',background:s.quizSelected===null?'#F1F0EF':'#37352F',color:s.quizSelected===null?'#9B9A97':'#fff',borderRadius:4,fontSize:15,fontWeight:600,border:'none',cursor:s.quizSelected===null?'default':'pointer'}},'Check Answer'):
+        this.E('button',{onClick:()=>this.setState({quizSelected:null,quizSubmitted:false}),style:{width:'100%',padding:'13px',background:'#37352F',color:'#fff',borderRadius:4,fontSize:15,fontWeight:600,border:'none',cursor:'pointer'}},'Next Question →')
+      )
+    );
+  }
+
+  // ── NODE: WRITING ────────────────────────────────────────────
+  renderNodeWriting() {
+    const s = this.state;
+    const words = s.writingText.trim()?s.writingText.trim().split(/\s+/).length:0;
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.BackBar('Introduction Paragraph Practice',this.E('span',{style:{fontSize:12,color:'#787774',marginLeft:'auto'}},'Node 3/8')),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto',padding:'20px 16px'}},
+        this.E('div',{style:{padding:'14px',background:'#F7F6F3',borderRadius:6,border:'1px solid #EDECE9',marginBottom:16}},
+          this.E('div',{style:{fontSize:11,fontWeight:700,color:'#787774',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:8}},'✍️ Writing Prompt'),
+          this.E('div',{style:{fontSize:14,color:'#37352F',lineHeight:1.65}},'Some people believe universities should only offer courses useful for employment. Others believe universities should offer a wider range of courses. Discuss both views and give your opinion.'),
+          this.E('div',{style:{fontSize:12,color:'#9B9A97',marginTop:8}},'Write an introduction paragraph · Target: 80–120 words')
+        ),
+        this.E('textarea',{value:s.writingText,onChange:e=>this.setState({writingText:e.target.value,aiChecked:false}),placeholder:'Start writing your introduction here…',style:{width:'100%',minHeight:160,padding:'14px',background:'#fff',border:'1px solid #EDECE9',borderRadius:6,fontSize:14,color:'#37352F',lineHeight:1.7,resize:'none',outline:'none',fontFamily:'inherit'}}),
+        this.E('div',{style:{display:'flex',justifyContent:'space-between',marginTop:6,marginBottom:16}},
+          this.E('span',{style:{fontSize:12,color:words>120?'#C0392B':words>=80?'#1A7A1A':'#9B9A97'}},words+' words'),
+          this.E('span',{style:{fontSize:12,color:'#9B9A97'}},'80–120 target')
+        ),
+        s.aiChecked?this.E('div',{style:{background:'#F7F6F3',borderRadius:6,border:'1px solid #EDECE9',overflow:'hidden',marginBottom:16}},
+          this.E('div',{style:{padding:'12px 14px',borderBottom:'1px solid #EDECE9',display:'flex',alignItems:'center',justifyContent:'space-between'}},
+            this.E('span',{style:{fontSize:14,fontWeight:700,color:'#37352F'}},'🤖 AI Feedback'),
+            this.E('div',{style:{display:'flex',alignItems:'baseline',gap:4}},
+              this.E('span',{style:{fontSize:24,fontWeight:700,color:'#37352F'}},'6.5'),
+              this.E('span',{style:{fontSize:13,color:'#9B9A97'}},'/ 9.0')
+            )
+          ),
+          ...[{l:'Task Response',s:7.0,f:'Main ideas addressed well. Be more specific with examples.'},{l:'Coherence',s:6.5,f:'Good structure. Add more transition words between sentences.'},{l:'Vocabulary',s:6.5,f:'Good range. Aim for more academic lexical items.'},{l:'Grammar',s:6.0,f:'2 errors found. Check subject–verb agreement.'}].map((b,i,arr)=>this.E('div',{key:i,style:{padding:'10px 14px',borderBottom:i<arr.length-1?'1px solid #EDECE9':'none'}},
+            this.E('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:4}},
+              this.E('span',{style:{fontSize:13,fontWeight:600,color:'#37352F'}},b.l),
+              this.E('span',{style:{fontSize:13,fontWeight:700,color:'#37352F'}},b.s.toFixed(1))
+            ),
+            this.E('div',{style:{height:3,background:'#EDECE9',borderRadius:2,marginBottom:5,overflow:'hidden'}},
+              this.E('div',{style:{height:'100%',width:(b.s/9*100)+'%',background:'#37352F',borderRadius:2}})
+            ),
+            this.E('div',{style:{fontSize:12,color:'#787774'}},b.f)
+          ))
+        ):null
+      ),
+      this.E('div',{style:{padding:'12px 16px',background:'#fff',borderTop:'1px solid #EDECE9',flexShrink:0,display:'flex',gap:8}},
+        !s.aiChecked?this.E('button',{onClick:()=>words>=8&&this.setState({aiChecked:true}),style:{flex:1,padding:'12px',background:words<8?'#F1F0EF':'#FEF9EC',color:words<8?'#9B9A97':'#A37010',borderRadius:4,fontSize:14,fontWeight:600,border:words<8?'none':'1px solid #F5E0A0',cursor:words<8?'default':'pointer'}},'🤖 AI Check'):null,
+        this.E('button',{onClick:()=>this.back(),style:{flex:1,padding:'12px',background:'#37352F',color:'#fff',borderRadius:4,fontSize:14,fontWeight:600,border:'none',cursor:'pointer'}},s.aiChecked?'Submit ✓':'Submit')
+      )
+    );
+  }
+
+  // ── NODE: SPEAKING ───────────────────────────────────────────
+  renderNodeSpeaking() {
+    const s = this.state;
+    const startRec = () => {
+      this.setState({recordState:'recording',recSeconds:0});
+      this.recordingTimer = setInterval(()=>this.setState(st=>{
+        if(st.recSeconds>=90){clearInterval(this.recordingTimer);this.recordingTimer=null;return{recordState:'done',recSeconds:90};}
+        return{recSeconds:st.recSeconds+1};
+      }),1000);
+    };
+    const stopRec = () => {
+      clearInterval(this.recordingTimer); this.recordingTimer=null;
+      this.setState({recordState:'done'});
+    };
+    const mm = Math.floor(s.recSeconds/60), ss = (s.recSeconds%60).toString().padStart(2,'0');
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.BackBar('Oral Summary Task',this.E('span',{style:{fontSize:12,color:'#787774',marginLeft:'auto'}},'Node 5/8')),
+      this.E('div',{style:{flex:1,display:'flex',flexDirection:'column',padding:'20px 16px',background:'#FBFBFA'}},
+        this.E('div',{style:{padding:'14px',background:'#fff',borderRadius:6,border:'1px solid #EDECE9',marginBottom:24}},
+          this.E('div',{style:{fontSize:11,fontWeight:700,color:'#787774',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:8}},'🎙️ Speaking Prompt'),
+          this.E('div',{style:{fontSize:14,color:'#37352F',lineHeight:1.65}},'In 60–90 seconds, summarize the key structural components of an IELTS Task 2 essay. Include the purpose of each paragraph.'),
+          this.E('div',{style:{fontSize:12,color:'#9B9A97',marginTop:8}},'60–90 seconds · AI scores fluency & pronunciation')
+        ),
+        this.E('div',{style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:20}},
+          s.recordState==='idle'?this.E('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',gap:16}},
+            this.E('div',{onClick:startRec,style:{width:80,height:80,borderRadius:'50%',background:'#37352F',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',boxShadow:'0 6px 24px rgba(55,53,47,0.2)'}},
+              this.E('svg',{width:30,height:30,viewBox:'0 0 24 24',fill:'none',stroke:'#fff',strokeWidth:2,strokeLinecap:'round'},
+                this.E('path',{d:'M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z'},''),
+                this.E('path',{d:'M19 10v2a7 7 0 0 1-14 0v-2'},''),
+                this.E('line',{x1:12,y1:19,x2:12,y2:23},''),this.E('line',{x1:8,y1:23,x2:16,y2:23},'')
+              )
+            ),
+            this.E('div',{style:{fontSize:14,color:'#787774'}},'Tap to start recording')
+          ):s.recordState==='recording'?this.E('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',gap:16,width:'100%'}},
+            this.E('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',gap:3,height:56}},
+              this.waveHeights.map((h,i)=>this.E('div',{key:i,style:{width:3,height:h,background:'#37352F',borderRadius:2,animation:`pulse ${0.5+Math.random()*0.4}s ease-in-out infinite`,animationDelay:i*0.06+'s',opacity:0.5+Math.random()*0.5}}))
+            ),
+            this.E('div',{style:{fontSize:32,fontWeight:700,color:'#37352F',fontVariantNumeric:'tabular-nums'}},mm+':'+ss),
+            this.E('div',{style:{fontSize:13,color:'#9B9A97'}},'Recording…'),
+            this.E('div',{onClick:stopRec,style:{width:56,height:56,borderRadius:'50%',background:'#E53E3E',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',animation:'recordPulse 1.5s ease-in-out infinite',boxShadow:'0 4px 16px rgba(229,62,62,0.25)'}},
+              this.E('div',{style:{width:16,height:16,background:'#fff',borderRadius:3}})
+            )
+          ):this.E('div',{style:{width:'100%',display:'flex',flexDirection:'column',gap:16}},
+            this.E('div',{style:{padding:'16px',background:'#fff',borderRadius:8,border:'1px solid #EDECE9'}},
+              this.E('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}},
+                this.E('span',{style:{fontSize:14,fontWeight:600,color:'#37352F'}},'🎵 Your Recording'),
+                this.E('span',{style:{fontSize:13,color:'#9B9A97'}},s.recSeconds+'s')
+              ),
+              this.E('div',{style:{height:40,background:'#F7F6F3',borderRadius:6,display:'flex',alignItems:'center',gap:10,padding:'0 12px'}},
+                this.E('div',{style:{width:26,height:26,borderRadius:'50%',background:'#37352F',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}},
+                  this.E('div',{style:{width:0,height:0,borderTop:'6px solid transparent',borderBottom:'6px solid transparent',borderLeft:'10px solid #fff',marginLeft:3}})
+                ),
+                this.E('div',{style:{flex:1,height:3,background:'#EDECE9',borderRadius:2,overflow:'hidden'}},
+                  this.E('div',{style:{width:'35%',height:'100%',background:'#37352F',borderRadius:2}})
+                )
+              )
+            ),
+            this.E('div',{onClick:()=>this.setState({recordState:'idle',recSeconds:0}),style:{fontSize:13,color:'#787774',cursor:'pointer',textAlign:'center',textDecoration:'underline'}},'Record again')
+          )
+        )
+      ),
+      s.recordState==='done'?this.E('div',{style:{padding:'12px 16px',background:'#fff',borderTop:'1px solid #EDECE9',flexShrink:0}},
+        this.E('button',{onClick:()=>this.back(),style:{width:'100%',padding:'13px',background:'#37352F',color:'#fff',borderRadius:4,fontSize:15,fontWeight:600,border:'none',cursor:'pointer'}},'Submit Recording ✓')
+      ):null
+    );
+  }
+
+  // ── NODE: DISCUSSION ─────────────────────────────────────────
+  renderNodeDiscussion() {
+    const s = this.state;
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.BackBar('Share Your Essay Draft'),
+      this.E('div',{style:{padding:'14px 16px',background:'#FBFBFA',borderBottom:'1px solid #EDECE9',flexShrink:0}},
+        this.E('div',{style:{fontSize:11,fontWeight:700,color:'#787774',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:8}},'💬 Discussion Prompt'),
+        this.E('div',{style:{fontSize:15,fontWeight:600,color:'#37352F',lineHeight:1.5}},'Technology has made communication easier — but has it made us more isolated? Share your perspective.')
+      ),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto'}},
+        this.E('div',{style:{padding:'12px 16px 4px',fontSize:11,fontWeight:700,color:'#9B9A97',textTransform:'uppercase',letterSpacing:'0.8px'}},s.discussionPosts.length+' responses'),
+        ...s.discussionPosts.map((p,i)=>this.E('div',{key:i,style:{padding:'14px 16px',borderBottom:'1px solid #EDECE9'}},
+          this.E('div',{style:{display:'flex',gap:10,marginBottom:10}},
+            this.Avatar(p.av,32),
+            this.E('div',null,
+              this.E('div',{style:{fontSize:13,fontWeight:600,color:'#37352F'}},p.name),
+              this.E('div',{style:{fontSize:11,color:'#9B9A97'}},'2h ago')
+            )
+          ),
+          this.E('div',{style:{fontSize:14,color:'#37352F',lineHeight:1.65,marginBottom:10}},p.text),
+          this.E('div',{style:{display:'flex',alignItems:'center',gap:14}},
+            this.E('div',{onClick:()=>{const posts=[...s.discussionPosts];posts[i]={...posts[i],likes:posts[i].likes+(posts[i].liked?-1:1),liked:!posts[i].liked};this.setState({discussionPosts:posts});},style:{display:'flex',alignItems:'center',gap:5,cursor:'pointer'}},
+              this.E('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:p.liked?'#37352F':'none',stroke:'#37352F',strokeWidth:2},this.E('path',{d:'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'},'')
+              ),
+              this.E('span',{style:{fontSize:12,color:'#787774'}},p.likes)
+            ),
+            this.E('span',{style:{fontSize:12,color:'#787774',cursor:'pointer'}},'Reply')
+          )
+        )),
+        this.E('div',{style:{height:80}})
+      ),
+      this.E('div',{style:{padding:'10px 16px',background:'#fff',borderTop:'1px solid #EDECE9',flexShrink:0,display:'flex',gap:8,alignItems:'flex-end'}},
+        this.E('textarea',{value:s.discussionInput,onChange:e=>this.setState({discussionInput:e.target.value}),placeholder:'Share your thoughts…',style:{flex:1,padding:'10px 12px',border:'1px solid #EDECE9',borderRadius:6,fontSize:14,color:'#37352F',lineHeight:1.5,resize:'none',outline:'none',fontFamily:'inherit',maxHeight:80,minHeight:40}}),
+        this.E('button',{onClick:()=>{if(!s.discussionInput.trim())return;const np={av:'AT',name:'Alex Tran',text:s.discussionInput,likes:0,liked:false};this.setState(st=>({discussionPosts:[...st.discussionPosts,np],discussionInput:''}));},style:{width:38,height:38,background:'#37352F',borderRadius:6,border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
+          this.E('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'#fff',strokeWidth:2},this.E('line',{x1:22,y1:2,x2:11,y2:13},''),this.E('polygon',{points:'22 2 15 22 11 13 2 9 22 2'},''))
+        )
+      )
+    );
+  }
+
+  // ── NODE: FILL IN BLANK ──────────────────────────────────────
+  renderNodeFill() {
+    const s = this.state;
+    const sentences = [
+      { pre:'Despite the heavy rain,', suf:', she decided to go to the market anyway.', ans:'nevertheless', hint:'Hint: shows contrast after a comma' },
+      { pre:'The study showed promising results;', suf:', more research is needed before final conclusions.', ans:'however', hint:'Hint: contrasting conjunctive adverb' },
+      { pre:'The policy was approved', suf:' of strong opposition from the staff.', ans:'in spite', hint:'Hint: two words — "in ____"' },
+    ];
+    const ok = (i) => (s.fillAnswers[i]||'').trim().toLowerCase()===sentences[i].ans.toLowerCase();
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.BackBar('Linking Words Exercise',this.E('span',{style:{fontSize:12,color:'#787774',marginLeft:'auto'}},'Node 7/8')),
+      this.E('div',{style:{height:3,background:'#EDECE9',flexShrink:0}},this.E('div',{style:{height:'100%',width:'87.5%',background:'#37352F'}})),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto',padding:'20px 16px'}},
+        this.E('div',{style:{fontSize:11,fontWeight:700,color:'#9B9A97',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:4}},'Fill in the Blank'),
+        this.E('div',{style:{fontSize:13,color:'#9B9A97',marginBottom:20}},'Type the correct linking word or phrase.'),
+        ...sentences.map((sen,i)=>this.E('div',{key:i,style:{padding:'14px',background:'#fff',border:'1px solid '+(s.fillChecked?(ok(i)?'#A8D8A8':'#F5B8B8'):'#EDECE9'),borderRadius:6,marginBottom:12}},
+          this.E('div',{style:{fontSize:14,color:'#37352F',lineHeight:1.9,display:'flex',alignItems:'baseline',flexWrap:'wrap',gap:4}},
+            this.E('span',null,sen.pre+' '),
+            this.E('input',{value:s.fillAnswers[i]||'',onChange:e=>{if(!s.fillChecked){const a=[...s.fillAnswers];a[i]=e.target.value;this.setState({fillAnswers:a});}},style:{border:'none',borderBottom:'2px solid '+(s.fillChecked?(ok(i)?'#27AE60':'#E53E3E'):'#37352F'),padding:'0 4px',fontSize:14,color:'#37352F',outline:'none',minWidth:100,fontFamily:'inherit',background:'transparent',fontWeight:s.fillChecked&&ok(i)?700:400}}),
+            this.E('span',null,' '+sen.suf)
+          ),
+          this.E('div',{style:{fontSize:11,color:'#9B9A97',marginTop:6,fontStyle:'italic'}},sen.hint),
+          s.fillChecked?this.E('div',{style:{fontSize:12,marginTop:5,fontWeight:600,color:ok(i)?'#27AE60':'#E53E3E'}},ok(i)?'✓ Correct!':'✗ Answer: '+sen.ans):null
+        ))
+      ),
+      this.E('div',{style:{padding:'12px 16px',background:'#fff',borderTop:'1px solid #EDECE9',flexShrink:0}},
+        this.E('button',{onClick:()=>!s.fillChecked?this.setState({fillChecked:true}):this.back(),style:{width:'100%',padding:'13px',background:'#37352F',color:'#fff',borderRadius:4,fontSize:15,fontWeight:600,border:'none',cursor:'pointer'}},s.fillChecked?'Next Node →':'Check Answers')
+      )
+    );
+  }
+
+  // ── NODE: ROLEPLAY ───────────────────────────────────────────
+  renderNodeRoleplay() {
+    const s = this.state;
+    const aiReplies = ["That's a great start! Can you tell me more about your daily routine and how you manage your time effectively?","Excellent! How do you think your daily habits affect your productivity? Do you follow the same schedule on weekends?","Very well expressed! Let's move on. Where do you see yourself in five years, and what steps are you taking to get there?"];
+    const send = () => {
+      if(!s.roleplayInput.trim())return;
+      const userMsg={role:'user',text:s.roleplayInput};
+      const aiMsg={role:'ai',text:aiReplies[Math.floor((s.roleplayMessages.length-1)/2)%aiReplies.length]};
+      this.setState(st=>({roleplayMessages:[...st.roleplayMessages,userMsg,aiMsg],roleplayInput:''}));
+    };
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.BackBar('Examiner Roleplay'),
+      this.E('div',{style:{padding:'10px 16px',background:'#F7F6F3',borderBottom:'1px solid #EDECE9',flexShrink:0}},
+        this.E('div',{style:{fontSize:12,color:'#787774',lineHeight:1.5}},'🎭 Scene: IELTS Speaking Part 1 — Respond naturally in English to the AI examiner.')
+      ),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto',padding:'16px',display:'flex',flexDirection:'column',gap:12}},
+        ...s.roleplayMessages.map((msg,i)=>this.E('div',{key:i,style:{display:'flex',flexDirection:msg.role==='user'?'row-reverse':'row',gap:8,alignItems:'flex-end'}},
+          msg.role==='ai'?this.E('div',{style:{width:28,height:28,borderRadius:'50%',background:'#37352F',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}},'🤖'):this.Avatar('AT',28),
+          this.E('div',{style:{maxWidth:'80%',padding:'10px 13px',background:msg.role==='user'?'#37352F':'#F7F6F3',color:msg.role==='user'?'#fff':'#37352F',borderRadius:msg.role==='user'?'12px 12px 4px 12px':'12px 12px 12px 4px',fontSize:14,lineHeight:1.55,border:msg.role==='ai'?'1px solid #EDECE9':'none'}},msg.text)
+        )),
+        this.E('div',{style:{height:8}})
+      ),
+      this.E('div',{style:{padding:'10px 16px',background:'#fff',borderTop:'1px solid #EDECE9',flexShrink:0,display:'flex',gap:8,alignItems:'flex-end'}},
+        this.E('textarea',{value:s.roleplayInput,onChange:e=>this.setState({roleplayInput:e.target.value}),onKeyDown:e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}},placeholder:'Type your response… (Enter to send)',style:{flex:1,padding:'10px 12px',border:'1px solid #EDECE9',borderRadius:6,fontSize:14,color:'#37352F',lineHeight:1.5,resize:'none',outline:'none',fontFamily:'inherit',maxHeight:80,minHeight:40}}),
+        this.E('button',{onClick:send,style:{width:38,height:38,background:'#37352F',borderRadius:6,border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
+          this.E('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'#fff',strokeWidth:2},this.E('line',{x1:22,y1:2,x2:11,y2:13},''),this.E('polygon',{points:'22 2 15 22 11 13 2 9 22 2'},''))
+        )
+      )
+    );
+  }
+
+  // ── SCREEN: CREATE ───────────────────────────────────────────
+  renderCreate() {
+    const s = this.state;
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.E('div',{style:{padding:'14px 16px',background:'#fff',borderBottom:'1px solid #EDECE9',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}},
+        this.E('span',{style:{fontSize:16,fontWeight:700,color:'#37352F'}},'New Post'),
+        this.E('div',{style:{display:'flex',gap:8}},
+          this.E('button',{style:{padding:'7px 14px',background:'#F7F6F3',color:'#787774',borderRadius:4,fontSize:13,fontWeight:500,border:'1px solid #EDECE9',cursor:'pointer'}},'Draft'),
+          this.E('button',{style:{padding:'7px 16px',background:'#37352F',color:'#fff',borderRadius:4,fontSize:13,fontWeight:600,border:'none',cursor:'pointer'}},s.isThread?'Publish Thread':'Publish')
+        )
+      ),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto',padding:'16px'}},
+        this.E('div',{style:{marginBottom:16}},
+          this.E('div',{style:{fontSize:11,fontWeight:700,color:'#787774',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:8}},'Language Tag *'),
+          this.E('div',{style:{display:'flex',gap:6,flexWrap:'wrap'}},
+            ['English','Japanese','Korean','French','Spanish'].map(l=>this.E('div',{key:l,onClick:()=>this.setState({selectedLang:l}),style:{padding:'5px 12px',borderRadius:3,fontSize:13,fontWeight:500,cursor:'pointer',background:s.selectedLang===l?'#37352F':'#F7F6F3',color:s.selectedLang===l?'#fff':'#787774',border:'1px solid '+(s.selectedLang===l?'#37352F':'#EDECE9'),transition:'all 0.15s'}},l))
+          )
+        ),
+        this.E('textarea',{value:s.createText,onChange:e=>this.setState({createText:e.target.value}),placeholder:"What's on your mind? Share a tip, question, resource, or insight…",style:{width:'100%',minHeight:180,padding:'14px',border:'1px solid #EDECE9',borderRadius:6,fontSize:15,color:'#37352F',lineHeight:1.7,resize:'none',outline:'none',fontFamily:'inherit',marginBottom:16}}),
+        this.E('div',{style:{marginBottom:20}},
+          this.E('div',{style:{fontSize:11,fontWeight:700,color:'#787774',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:8}},'Skill Tags (optional)'),
+          this.E('div',{style:{display:'flex',gap:5,flexWrap:'wrap'}},
+            ['#writing','#grammar','#vocabulary','#speaking','#ielts','#business','#tips'].map(tag=>this.E('div',{key:tag,onClick:()=>this.setState(st=>{const t=[...st.selectedTags];const i=t.indexOf(tag);i>=0?t.splice(i,1):t.push(tag);return{selectedTags:t};}),style:{padding:'4px 10px',borderRadius:3,fontSize:12,fontWeight:500,cursor:'pointer',background:s.selectedTags.includes(tag)?'#37352F':'#F7F6F3',color:s.selectedTags.includes(tag)?'#fff':'#787774',border:'1px solid #EDECE9',transition:'all 0.15s'}},tag))
+          )
+        ),
+        this.Divider(0),
+        this.E('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 0 8px'}},
+          this.E('div',null,
+            this.E('div',{style:{fontSize:14,fontWeight:600,color:'#37352F'}},'Add Learning Path'),
+            this.E('div',{style:{fontSize:12,color:'#787774',marginTop:2}},'Turn this post into a Thread')
+          ),
+          this.E('div',{onClick:()=>this.setState(st=>({isThread:!st.isThread})),style:{width:44,height:24,borderRadius:12,background:s.isThread?'#37352F':'#EDECE9',position:'relative',cursor:'pointer',transition:'background 0.2s',flexShrink:0}},
+            this.E('div',{style:{width:18,height:18,borderRadius:'50%',background:'#fff',position:'absolute',top:3,left:s.isThread?23:3,transition:'left 0.2s',boxShadow:'0 1px 4px rgba(0,0,0,0.15)'}})
+          )
+        ),
+        s.isThread?this.E('div',{style:{background:'#FBFBFA',border:'1px solid #EDECE9',borderRadius:6,padding:'14px',marginTop:4}},
+          this.E('div',{style:{fontSize:11,fontWeight:700,color:'#787774',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:12}},'🧵 Thread Settings'),
+          this.E('div',{style:{marginBottom:12}},
+            this.E('div',{style:{fontSize:12,fontWeight:600,color:'#37352F',marginBottom:5}},'Thread Title *'),
+            this.E('input',{value:s.threadTitle,onChange:e=>this.setState({threadTitle:e.target.value}),placeholder:'e.g. IELTS Writing Task 2 Masterclass',style:{width:'100%',padding:'10px 12px',border:'1px solid #EDECE9',borderRadius:4,fontSize:14,color:'#37352F',outline:'none',fontFamily:'inherit',background:'#fff'}})
+          ),
+          this.E('div',{style:{display:'flex',gap:10,marginBottom:12}},
+            this.E('div',{style:{flex:1}},
+              this.E('div',{style:{fontSize:12,fontWeight:600,color:'#37352F',marginBottom:5}},'CEFR Level'),
+              this.E('select',{value:s.threadLevel,onChange:e=>this.setState({threadLevel:e.target.value}),style:{width:'100%',padding:'9px 10px',border:'1px solid #EDECE9',borderRadius:4,fontSize:13,color:'#37352F',outline:'none',fontFamily:'inherit',background:'#fff',cursor:'pointer'}},
+                ['A1','A2','B1','B2','C1','C2'].map(l=>this.E('option',{key:l,value:l},l))
+              )
+            ),
+            this.E('div',{style:{flex:1}},
+              this.E('div',{style:{fontSize:12,fontWeight:600,color:'#37352F',marginBottom:5}},'Duration'),
+              this.E('select',{style:{width:'100%',padding:'9px 10px',border:'1px solid #EDECE9',borderRadius:4,fontSize:13,color:'#37352F',outline:'none',fontFamily:'inherit',background:'#fff',cursor:'pointer'}},
+                ['1 week','2 weeks','30 days','6 weeks','3 months'].map(d=>this.E('option',{key:d},d))
+              )
+            )
+          ),
+          this.E('button',{style:{width:'100%',padding:'10px',background:'#fff',color:'#37352F',borderRadius:4,fontSize:13,fontWeight:600,border:'1px solid #EDECE9',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}},
+            this.E('span',{style:{fontSize:15}},'⬡'),' Add Nodes (0)'
+          )
+        ):null,
+        this.E('div',{style:{height:40}})
+      )
+    );
+  }
+
+  // ── SCREEN: NOTIFICATIONS ────────────────────────────────────
+  renderNotif() {
+    const s = this.state;
+    const unread = this.notifications.filter(n=>!s.readNotifs.includes(n.id)&&!n.read);
+    const typeBg   = { follow:'#F1F0EF', gemma:'#FEF9EC', comment:'#EAF2FB', streak:'#FEF4EF', node:'#F7F6F3', like:'#FDEAEA' };
+    const typeIcon = { follow:'👤', gemma:'◆', comment:'💬', streak:'🔥', node:'⬡', like:'♥' };
+    const NotifRow = (n,gray) => {
+      const isRead = s.readNotifs.includes(n.id)||n.read;
+      return this.E('div',{key:n.id,onClick:()=>this.setState(st=>{const r=[...st.readNotifs];if(!r.includes(n.id))r.push(n.id);return{readNotifs:r};}),style:{display:'flex',alignItems:'flex-start',gap:12,padding:'12px 16px',borderBottom:'1px solid #EDECE9',background:gray||isRead?'#fff':'#FAFAFA',cursor:'pointer'}},
+        n.av?this.E('div',{style:{position:'relative',flexShrink:0}},
+          this.Avatar(n.av,36),
+          this.E('div',{style:{width:18,height:18,borderRadius:'50%',background:typeBg[n.type]||'#F1F0EF',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,position:'absolute',right:-2,bottom:-2,border:'2px solid #fff'}},typeIcon[n.type])
+        ):this.E('div',{style:{width:36,height:36,borderRadius:'50%',background:typeBg[n.type],display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}},typeIcon[n.type]),
+        this.E('div',{style:{flex:1,paddingTop:2}},
+          this.E('div',{style:{fontSize:14,color:'#37352F',lineHeight:1.5}},n.av?this.E('strong',null,n.user+' '):null,n.msg),
+          this.E('div',{style:{fontSize:12,color:'#9B9A97',marginTop:2}},n.time+' ago')
+        ),
+        !isRead?this.E('div',{style:{width:7,height:7,borderRadius:'50%',background:'#37352F',flexShrink:0,marginTop:6}}):null
+      );
+    };
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.E('div',{style:{padding:'14px 16px',background:'#fff',borderBottom:'1px solid #EDECE9',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}},
+        this.E('span',{style:{fontSize:18,fontWeight:700,color:'#37352F'}},'Notifications'+(unread.length?' ('+unread.length+')':'')),
+        unread.length?this.E('span',{onClick:()=>this.setState(st=>{const r=[...st.readNotifs,...this.notifications.map(n=>n.id)];return{readNotifs:[...new Set(r)]}}),style:{fontSize:13,color:'#787774',cursor:'pointer'}},'Mark all read'):null
+      ),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto'}},
+        this.E('div',{style:{padding:'12px 16px 4px',fontSize:11,fontWeight:700,color:'#9B9A97',textTransform:'uppercase',letterSpacing:'0.8px'}},'Today'),
+        ...this.notifications.slice(0,3).map(n=>NotifRow(n,false)),
+        this.E('div',{style:{padding:'12px 16px 4px',fontSize:11,fontWeight:700,color:'#9B9A97',textTransform:'uppercase',letterSpacing:'0.8px'}},'Earlier'),
+        ...this.notifications.slice(3).map(n=>NotifRow(n,true)),
+        this.E('div',{style:{height:20}})
+      )
+    );
+  }
+
+  // ── SCREEN: PROFILE ──────────────────────────────────────────
+  renderProfile() {
+    const s = this.state;
+    const u = this.user;
+    const xpPct = Math.round(u.xp/u.xpNext*100);
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.E('div',{style:{padding:'14px 16px',background:'#fff',borderBottom:'1px solid #EDECE9',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}},
+        this.E('span',{style:{fontSize:16,fontWeight:700,color:'#37352F'}},u.handle),
+        this.E('div',{style:{width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',borderRadius:6}},
+          this.E('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'#37352F',strokeWidth:2},
+            this.E('line',{x1:3,y1:12,x2:21,y2:12},''),this.E('line',{x1:3,y1:6,x2:21,y2:6},''),this.E('line',{x1:3,y1:18,x2:21,y2:18},'')
+          )
+        )
+      ),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto'}},
+        this.E('div',{style:{padding:'20px 16px 16px',borderBottom:'1px solid #EDECE9'}},
+          this.E('div',{style:{display:'flex',alignItems:'flex-start',gap:14,marginBottom:16}},
+            this.E('div',{style:{width:66,height:66,borderRadius:'50%',background:'#EDE8D5',display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,fontWeight:700,color:'#37352F',flexShrink:0,border:'3px solid #EDECE9'}},u.av),
+            this.E('div',{style:{flex:1,paddingTop:2}},
+              this.E('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:2}},
+                this.E('span',{style:{fontSize:17,fontWeight:700,color:'#37352F'}},u.name),
+                this.E('span',{style:{padding:'2px 6px',background:'#F7F6F3',borderRadius:3,fontSize:11,fontWeight:600,color:'#37352F',border:'1px solid #EDECE9'}},'Lv.'+u.level)
+              ),
+              this.E('div',{style:{fontSize:13,color:'#9B9A97',marginBottom:6}},u.handle),
+              this.E('div',{style:{fontSize:13,color:'#787774',lineHeight:1.5}},u.bio)
+            )
+          ),
+          this.E('div',{style:{display:'flex',justifyContent:'space-around',padding:'12px 0',borderTop:'1px solid #EDECE9',borderBottom:'1px solid #EDECE9',marginBottom:14}},
+            ...[['Posts',u.posts],['Following',u.following],['Followers',u.followers]].map(([l,v])=>this.E('div',{key:l,style:{textAlign:'center'}},
+              this.E('div',{style:{fontSize:17,fontWeight:700,color:'#37352F'}},v),
+              this.E('div',{style:{fontSize:12,color:'#9B9A97'}},l)
+            ))
+          ),
+          this.E('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}},
+            this.E('div',{style:{padding:'12px',background:'#FEF9EC',borderRadius:6,border:'1px solid #F5E0A0'}},
+              this.E('div',{style:{fontSize:11,fontWeight:700,color:'#A37010',textTransform:'uppercase',letterSpacing:'0.5px',marginBottom:4}},'◆ Earned Gemma'),
+              this.E('div',{style:{fontSize:24,fontWeight:700,color:'#37352F'}},u.earnedGemma.toLocaleString()),
+              this.E('div',{style:{fontSize:11,color:'#9B9A97',marginTop:2}},'Reputation score')
+            ),
+            this.E('div',{style:{padding:'12px',background:'#FFFBF0',borderRadius:6,border:'1px solid #FFE49A'}},
+              this.E('div',{style:{fontSize:11,fontWeight:700,color:'#A37010',textTransform:'uppercase',letterSpacing:'0.5px',marginBottom:4}},'◆ Gifted Gemma'),
+              this.E('div',{style:{fontSize:24,fontWeight:700,color:'#37352F'}},u.giftedGemma.toLocaleString()),
+              this.E('div',{style:{fontSize:11,color:'#9B9A97',marginTop:2}},'Tips received')
+            )
+          ),
+          this.E('div',{style:{marginBottom:14}},
+            this.E('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}},
+              this.E('div',{style:{display:'flex',alignItems:'center',gap:8}},
+                this.E('span',{style:{fontSize:13,fontWeight:600,color:'#37352F'}},'Level '+u.level),
+                this.E('span',{style:{display:'inline-flex',alignItems:'center',gap:3,padding:'2px 8px',background:'#FEF4EF',borderRadius:3,fontSize:12,color:'#C2410C',fontWeight:600}},'🔥 '+u.streak+' days')
+              ),
+              this.E('span',{style:{fontSize:12,color:'#9B9A97'}},u.xp.toLocaleString()+' / '+u.xpNext.toLocaleString()+' XP')
+            ),
+            this.E('div',{style:{height:8,background:'#EDECE9',borderRadius:4,overflow:'hidden'}},
+              this.E('div',{style:{height:'100%',width:xpPct+'%',background:'#37352F',borderRadius:4,transition:'width 0.6s'}})
+            ),
+            this.E('div',{style:{fontSize:12,color:'#9B9A97',marginTop:4}},(u.xpNext-u.xp).toLocaleString()+' XP to Level '+(u.level+1))
+          ),
+          this.E('div',null,
+            this.E('div',{style:{fontSize:11,fontWeight:700,color:'#787774',textTransform:'uppercase',letterSpacing:'0.8px',marginBottom:8}},'Badges'),
+            this.E('div',{style:{display:'flex',gap:6}},
+              u.badges.map((b,i)=>this.E('div',{key:i,style:{width:38,height:38,borderRadius:6,background:'#F7F6F3',border:'1px solid #EDECE9',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,cursor:'pointer'}},b))
+            )
+          )
+        ),
+        this.E('div',{style:{display:'flex',borderBottom:'1px solid #EDECE9',background:'#fff'}},
+          ['threads','enrolled','posts'].map(t=>this.E('div',{key:t,onClick:()=>this.setState({profileTab:t}),style:{flex:1,padding:'12px 0',textAlign:'center',fontSize:13,fontWeight:600,color:s.profileTab===t?'#37352F':'#9B9A97',borderBottom:'2px solid '+(s.profileTab===t?'#37352F':'transparent'),cursor:'pointer',textTransform:'capitalize'}},(t==='threads'?'Created':t==='enrolled'?'Enrolled':'Posts')))
+        ),
+        s.profileTab==='threads'?this.E('div',null,
+          ...this.threads.slice(0,3).map(t=>this.E('div',{key:t.id,onClick:()=>this.nav('thread-detail',{threadId:t.id}),style:{display:'flex',gap:12,padding:'14px 16px',borderBottom:'1px solid #EDECE9',cursor:'pointer'}},
+            this.E('div',{style:{width:36,height:36,background:'#F7F6F3',borderRadius:5,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}},t.emoji),
+            this.E('div',{style:{flex:1,minWidth:0}},
+              this.E('div',{style:{fontSize:14,fontWeight:600,color:'#37352F',marginBottom:4,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},t.title),
+              this.E('div',{style:{display:'flex',gap:6,alignItems:'center'}},this.LevelBadge(t.level),this.E('span',{style:{fontSize:12,color:'#9B9A97'}},t.enrolled.toLocaleString()+' enrolled'),this.GemmaChip(t.gemma))
+            )
+          ))
+        ):s.profileTab==='enrolled'?this.E('div',null,
+          ...this.threads.slice(0,2).map(t=>this.E('div',{key:t.id,onClick:()=>this.nav('thread-detail',{threadId:t.id}),style:{display:'flex',gap:12,padding:'14px 16px',borderBottom:'1px solid #EDECE9',cursor:'pointer'}},
+            this.E('div',{style:{width:36,height:36,background:'#F7F6F3',borderRadius:5,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}},t.emoji),
+            this.E('div',{style:{flex:1,minWidth:0}},
+              this.E('div',{style:{fontSize:14,fontWeight:600,color:'#37352F',marginBottom:5,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},t.title),
+              this.E('div',{style:{height:3,background:'#EDECE9',borderRadius:2,marginBottom:4,overflow:'hidden'}},
+                this.E('div',{style:{height:'100%',width:t.progress+'%',background:'#37352F',borderRadius:2}})
+              ),
+              this.E('span',{style:{fontSize:12,color:'#9B9A97'}},t.progress+'% complete')
+            )
+          ))
+        ):this.E('div',null,
+          this.posts.map(p=>this.E('div',{key:p.id,style:{padding:'14px 16px',borderBottom:'1px solid #EDECE9'}},
+            this.E('div',{style:{fontSize:14,color:'#37352F',lineHeight:1.65,marginBottom:8}},p.content),
+            this.E('div',{style:{display:'flex',gap:14,fontSize:12,color:'#9B9A97'}},
+              this.E('span',null,'♥ '+p.likes),
+              this.E('span',null,'💬 '+p.comments),
+              this.E('span',null,p.time)
+            )
+          ))
+        ),
+        this.E('div',{style:{height:20}})
+      )
+    );
+  }
+
+  // ── SCREEN: LEADERBOARD ──────────────────────────────────────
+  renderLeaderboard() {
+    const s = this.state;
+    const top3 = this.leaderboard.slice(0,3);
+    const rest = this.leaderboard.slice(3);
+    const podOrder = [top3[1],top3[0],top3[2]];
+    const podH = [76,96,62];
+    const podBg = ['#EDECE9','#EDE8D5','#F1F0EF'];
+    const rankNum = (u) => this.leaderboard.indexOf(u)+1;
+    return this.E('div',{style:{display:'flex',flexDirection:'column',height:'100%',animation:'fadeUp 0.2s ease'}},
+      this.E('div',{style:{padding:'14px 16px 10px',background:'#fff',borderBottom:'1px solid #EDECE9',flexShrink:0}},
+        this.E('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:10}},
+          this.E('div',{onClick:()=>this.back(),style:{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}},
+            this.E('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'#37352F',strokeWidth:2.5,strokeLinecap:'round'},this.E('path',{d:'M19 12H5'},''),this.E('path',{d:'M12 5l-7 7 7 7'},''))
+          ),
+          this.E('span',{style:{fontSize:17,fontWeight:700,color:'#37352F'}},'🏆 Leaderboard')
+        ),
+        this.E('div',{style:{display:'flex',gap:6}},
+          ['weekly','all-time'].map(f=>this.E('div',{key:f,onClick:()=>this.setState({lbFilter:f}),style:{padding:'5px 14px',borderRadius:3,fontSize:13,fontWeight:500,cursor:'pointer',background:s.lbFilter===f?'#37352F':'#F7F6F3',color:s.lbFilter===f?'#fff':'#787774',border:'1px solid #EDECE9',transition:'all 0.15s'}},f==='weekly'?'This Week':'All Time'))
+        )
+      ),
+      this.E('div',{className:'scroll',style:{flex:1,overflowY:'auto'}},
+        this.E('div',{style:{padding:'20px 16px 0',background:'#FBFBFA',borderBottom:'1px solid #EDECE9',display:'flex',alignItems:'flex-end',justifyContent:'center',gap:0}},
+          podOrder.map((u,pi)=>{
+            if(!u)return null;
+            const rk=rankNum(u);
+            return this.E('div',{key:u.handle,style:{display:'flex',flexDirection:'column',alignItems:'center',flex:1,paddingBottom:0}},
+              u.badge?this.E('div',{style:{fontSize:pi===1?22:18,marginBottom:4}},u.badge):null,
+              this.Avatar(u.av,pi===1?46:38),
+              this.E('div',{style:{fontSize:11,fontWeight:700,color:'#37352F',marginTop:4,textAlign:'center',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',width:'100%',padding:'0 4px'}},u.name.split(' ')[0]),
+              this.E('div',{style:{fontSize:10,color:'#9B9A97',marginBottom:5}},(u.xp/1000).toFixed(1)+'k XP'),
+              this.E('div',{style:{width:'100%',height:podH[pi],background:podBg[pi],display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'4px 4px 0 0'}},
+                this.E('span',{style:{fontSize:pi===1?26:20,fontWeight:700,color:'#37352F',opacity:0.35}},rk)
+              )
+            );
+          })
+        ),
+        ...rest.map(u=>this.E('div',{key:u.handle,style:{display:'flex',alignItems:'center',gap:12,padding:'13px 16px',borderBottom:'1px solid #EDECE9',background:u.isMe?'#FAFAFA':'#fff'}},
+          this.E('span',{style:{fontSize:14,fontWeight:700,color:'#AEACA7',width:22,textAlign:'right',flexShrink:0}},u.rank),
+          this.Avatar(u.av,36),
+          this.E('div',{style:{flex:1,minWidth:0}},
+            this.E('div',{style:{display:'flex',alignItems:'center',gap:6}},
+              this.E('span',{style:{fontSize:14,fontWeight:u.isMe?700:500,color:'#37352F'}},u.isMe?'You · '+u.name:u.name),
+              u.badge?this.E('span',null,u.badge):null
+            ),
+            this.E('span',{style:{fontSize:12,color:'#9B9A97'}},u.handle)
+          ),
+          this.E('div',{style:{textAlign:'right'}},
+            this.E('div',{style:{fontSize:14,fontWeight:700,color:'#37352F'}},(u.xp/1000).toFixed(1)+'k XP'),
+            this.E('div',{style:{fontSize:11,color:'#9B9A97',display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end'}},'🔥 ',u.streak,'d')
+          )
+        )),
+        this.E('div',{style:{height:20}})
+      )
+    );
+  }
+
+  // ── ENROLL MODAL ─────────────────────────────────────────────
+  renderEnrollModal() {
+    const s = this.state;
+    const thread = this.threads.find(t=>t.id===s.enrollTarget)||this.threads[1];
+    return this.E('div',{style:{position:'absolute',inset:0,background:'rgba(0,0,0,0.48)',display:'flex',flexDirection:'column',justifyContent:'flex-end',zIndex:100}},
+      this.E('div',{onClick:()=>this.setState({showEnroll:false}),style:{flex:1}}),
+      this.E('div',{style:{background:'#fff',borderRadius:'16px 16px 0 0',padding:'8px 0 0',maxHeight:'88%',display:'flex',flexDirection:'column'}},
+        this.E('div',{style:{width:40,height:4,background:'#EDECE9',borderRadius:2,margin:'0 auto 16px'}}),
+        this.E('div',{className:'scroll',style:{overflowY:'auto',padding:'0 16px 36px'}},
+          this.E('div',{style:{display:'flex',gap:12,marginBottom:14,alignItems:'flex-start'}},
+            this.E('div',{style:{width:50,height:50,background:'#F7F6F3',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,flexShrink:0,border:'1px solid #EDECE9'}},thread.emoji),
+            this.E('div',{style:{flex:1}},
+              this.E('div',{style:{fontSize:17,fontWeight:700,color:'#37352F',lineHeight:1.3,marginBottom:5}},thread.title),
+              this.E('div',{style:{display:'flex',gap:5,alignItems:'center'}},this.LevelBadge(thread.level),this.E('span',{style:{fontSize:12,color:'#787774'}},'· '+thread.lang))
+            )
+          ),
+          this.E('div',{style:{fontSize:14,color:'#787774',lineHeight:1.6,marginBottom:16}},thread.desc),
+          this.E('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:18}},
+            ...[['⬡',thread.nodeCount+' nodes'],['⏱',thread.duration],['👥',thread.enrolled.toLocaleString()]].map(([ic,val])=>this.E('div',{key:val,style:{padding:'10px 6px',background:'#FBFBFA',borderRadius:6,border:'1px solid #EDECE9',textAlign:'center'}},
+              this.E('div',{style:{fontSize:16,marginBottom:3}},ic),
+              this.E('div',{style:{fontSize:11,color:'#9B9A97',fontWeight:500}},val)
+            ))
+          ),
+          this.E('div',{style:{display:'flex',alignItems:'center',gap:10,padding:'12px',background:'#FBFBFA',borderRadius:6,border:'1px solid #EDECE9',marginBottom:18}},
+            this.Avatar(thread.av,34),
+            this.E('div',{style:{flex:1}},
+              this.E('div',{style:{fontSize:13,fontWeight:600,color:'#37352F'}},thread.creator),
+              this.E('span',{style:{fontSize:12,color:'#9B9A97'}},thread.handle)
+            ),
+            this.GemmaChip(thread.gemma)
+          ),
+          this.E('button',{onClick:()=>this.setState(st=>({enrolledThreads:[...st.enrolledThreads,st.enrollTarget],showEnroll:false,screen:'thread-detail',screenParams:{threadId:st.enrollTarget}})),style:{width:'100%',padding:'14px',background:'#37352F',color:'#fff',borderRadius:4,fontSize:15,fontWeight:700,border:'none',cursor:'pointer',marginBottom:10}},'Enroll Now — Free'),
+          this.E('button',{onClick:()=>this.setState({showEnroll:false}),style:{width:'100%',padding:'12px',background:'transparent',color:'#9B9A97',borderRadius:4,fontSize:14,fontWeight:500,border:'none',cursor:'pointer'}},'Not now')
+        )
+      )
+    );
+  }
+
+  // ── renderVals ───────────────────────────────────────────────
+  renderVals() {
+    const s = this.state;
+    const t = s.tab;
+
+    // Route screen
+    let screenEl;
+    switch(s.screen) {
+      case 'feed':            screenEl = this.renderFeed(); break;
+      case 'explore':         screenEl = this.renderExplore(); break;
+      case 'create':          screenEl = this.renderCreate(); break;
+      case 'notif':           screenEl = this.renderNotif(); break;
+      case 'profile':         screenEl = this.renderProfile(); break;
+      case 'thread-detail':   screenEl = this.renderThreadDetail(); break;
+      case 'node-vocab':      screenEl = this.renderNodeVocab(); break;
+      case 'node-quiz':       screenEl = this.renderNodeQuiz(); break;
+      case 'node-writing':    screenEl = this.renderNodeWriting(); break;
+      case 'node-speaking':   screenEl = this.renderNodeSpeaking(); break;
+      case 'node-discussion': screenEl = this.renderNodeDiscussion(); break;
+      case 'node-fill':       screenEl = this.renderNodeFill(); break;
+      case 'node-roleplay':   screenEl = this.renderNodeRoleplay(); break;
+      case 'leaderboard':     screenEl = this.renderLeaderboard(); break;
+      default:                screenEl = this.renderFeed();
+    }
+
+    const content = this.E('div',{key:s.screen,style:{position:'absolute',inset:0,display:'flex',flexDirection:'column',overflow:'hidden',background:'#fff',animation:'fadeUp 0.18s ease'}},
+      screenEl,
+      s.showEnroll ? this.renderEnrollModal() : null
+    );
+
+    // Bottom nav builder
+    const clr = (tabId) => t===tabId?'#37352F':'#AEACA7';
+    const NavItem = (tabId, label, paths) => this.E('div',{onClick:()=>this.goTab(tabId),style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'4px 0',cursor:'pointer'}},
+      this.E('svg',{width:22,height:22,viewBox:'0 0 24 24',fill:'none',stroke:clr(tabId),strokeWidth:t===tabId?2.5:1.8,strokeLinecap:'round',strokeLinejoin:'round'},...paths),
+      this.E('span',{style:{fontSize:10,fontWeight:t===tabId?700:500,color:clr(tabId)}},label)
+    );
+
+    const unreadCount = this.notifications.filter(n=>!s.readNotifs.includes(n.id)&&!n.read).length;
+
+    // Status bar icons
+    const statusIcons = this.E('div',{style:{display:'flex',alignItems:'center',gap:6}},
+      this.E('div',{style:{display:'flex',alignItems:'flex-end',gap:2}},
+        ...[6,9,12,15].map((h,i)=>this.E('div',{key:i,style:{width:3,height:h,background:'#37352F',borderRadius:1}}))
+      ),
+      this.E('svg',{width:16,height:11,viewBox:'0 0 16 11',fill:'none'},
+        this.E('path',{d:'M8 2.5C10.5 2.5 12.7 3.5 14.2 5.2',stroke:'#37352F',strokeWidth:1.5,strokeLinecap:'round'},''),
+        this.E('path',{d:'M1.8 5.2C3.3 3.5 5.5 2.5 8 2.5',stroke:'#37352F',strokeWidth:1.5,strokeLinecap:'round'},''),
+        this.E('path',{d:'M5.5 7.5C6.3 6.6 7.1 6 8 6s1.7.6 2.5 1.5',stroke:'#37352F',strokeWidth:1.5,strokeLinecap:'round'},''),
+        this.E('circle',{cx:8,cy:9.5,r:1,fill:'#37352F'},'')
+      ),
+      this.E('div',{style:{display:'flex',alignItems:'center',gap:1}},
+        this.E('div',{style:{width:24,height:12,border:'1.5px solid #37352F',borderRadius:2.5,padding:1.5,display:'flex',alignItems:'stretch'}},
+          this.E('div',{style:{width:'82%',background:'#37352F',borderRadius:1}})
+        ),
+        this.E('div',{style:{width:2,height:5,background:'#37352F',borderRadius:'0 1px 1px 0'}})
+      )
+    );
+
+    return {
+      screenContent: content,
+      statusIcons,
+
+      navHome: NavItem('home','Home',[
+        this.E('path',{key:'h1',d:'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',fill:t==='home'?'#37352F':'none'},''),
+        this.E('polyline',{key:'h2',points:'9 22 9 12 15 12 15 22'},'')
+      ]),
+
+      navExplore: NavItem('explore','Explore',[
+        this.E('circle',{key:'e1',cx:11,cy:11,r:8},''),
+        this.E('line',{key:'e2',x1:21,y1:21,x2:16.65,y2:16.65},'')
+      ]),
+
+      navCreate: this.E('div',{onClick:()=>this.goTab('create'),style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-start',padding:'2px 0',cursor:'pointer'}},
+        this.E('div',{style:{width:44,height:44,background:'#37352F',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 8px rgba(55,53,47,0.2)'}},
+          this.E('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'#fff',strokeWidth:2.5,strokeLinecap:'round'},
+            this.E('line',{x1:12,y1:5,x2:12,y2:19},''),this.E('line',{x1:5,y1:12,x2:19,y2:12},'')
+          )
+        )
+      ),
+
+      navNotif: this.E('div',{onClick:()=>this.goTab('notif'),style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'4px 0',cursor:'pointer'}},
+        this.E('div',{style:{position:'relative'}},
+          this.E('svg',{width:22,height:22,viewBox:'0 0 24 24',fill:'none',stroke:clr('notif'),strokeWidth:t==='notif'?2.5:1.8,strokeLinecap:'round',strokeLinejoin:'round'},
+            this.E('path',{d:'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'},''),
+            this.E('path',{d:'M13.73 21a2 2 0 0 1-3.46 0'},'')
+          ),
+          unreadCount>0?this.E('div',{style:{position:'absolute',top:-1,right:-2,width:8,height:8,borderRadius:'50%',background:'#E53E3E',border:'1.5px solid #fff'}}):null
+        ),
+        this.E('span',{style:{fontSize:10,fontWeight:t==='notif'?700:500,color:clr('notif')}},'Inbox')
+      ),
+
+      navProfile: NavItem('profile','Me',[
+        this.E('path',{key:'p1',d:'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'},''),
+        this.E('circle',{key:'p2',cx:12,cy:7,r:4,fill:t==='profile'?'#37352F':'none'},'')
+      ]),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,16 +1,20 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/biometric/biometric_sdk.dart';
 import '../../../../../core/biometric/models/biometric_result.dart';
 import '../../../../../core/biometric/models/biometric_status.dart';
 import '../../../domain/usecases/login_usecase.dart';
 import 'login_state.dart';
 
-class LoginCubit extends Cubit<LoginState> {
+class LoginCubit extends BaseCubit<LoginState> {
   final LoginUseCase _loginUseCase;
 
   LoginCubit({required LoginUseCase loginUseCase})
       : _loginUseCase = loginUseCase,
         super(const LoginState());
+
+  /// Khởi tạo qua [started] từ UI.
+  @override
+  Future<void> fetchData() async {}
 
   void started() {
     emit(const LoginState());

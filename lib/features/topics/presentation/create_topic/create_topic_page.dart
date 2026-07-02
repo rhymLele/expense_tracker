@@ -39,7 +39,7 @@ class CreateTopicPage extends StatelessWidget {
           ScaffoldMessenger.of(ctx)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(
-              content: Text(state.errorMessage ?? 'Đăng bài thất bại'),
+              content: Text(state.error ?? 'Đăng bài thất bại'),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
               action: SnackBarAction(

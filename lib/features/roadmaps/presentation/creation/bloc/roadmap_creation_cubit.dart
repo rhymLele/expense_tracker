@@ -1,19 +1,20 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/base/base_cubit.dart';
 import 'roadmap_creation_models.dart';
 import 'roadmap_creation_state.dart';
 
-class RoadmapCreationCubit extends Cubit<RoadmapCreationState> {
+class RoadmapCreationCubit extends BaseCubit<RoadmapCreationState> {
   Timer? _draftDebounce;
 
   RoadmapCreationCubit() : super(const RoadmapCreationState());
 
+  /// Khởi tạo qua [initialize] từ UI.
   @override
-  Future<void> close() {
-    _draftDebounce?.cancel();
-    return super.close();
-  }
+  Future<void> fetchData() async {}
+
+  @override
+  void onDispose() => _draftDebounce?.cancel();
 
   void initialize() {
     emit(state.copyWith(days: [const RoadmapDayDraft()], totalDays: 1));

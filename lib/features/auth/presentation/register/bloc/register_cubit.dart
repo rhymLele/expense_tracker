@@ -1,13 +1,18 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/base/base_cubit.dart';
+import '../../../../../core/base/base_state.dart';
 import '../../../domain/usecases/register_usecase.dart';
 import 'register_state.dart';
 
-class RegisterCubit extends Cubit<RegisterState> {
+class RegisterCubit extends LoadCubit<RegisterState> {
   final RegisterUseCase _registerUseCase;
 
   RegisterCubit({required RegisterUseCase registerUseCase})
       : _registerUseCase = registerUseCase,
         super(const RegisterState());
+
+  /// Form-driven — không load ban đầu.
+  @override
+  Future<void> fetchData() async {}
 
   void started() {
     emit(const RegisterState());
@@ -16,14 +21,14 @@ class RegisterCubit extends Cubit<RegisterState> {
   void togglePasswordVisibility() {
     emit(state.copyWith(
       obscurePassword: !state.obscurePassword,
-      errorMessage: state.errorMessage,
+      error: state.error,
     ));
   }
 
   void toggleConfirmPasswordVisibility() {
     emit(state.copyWith(
       obscureConfirmPassword: !state.obscureConfirmPassword,
-      errorMessage: state.errorMessage,
+      error: state.error,
     ));
   }
 
@@ -32,7 +37,7 @@ class RegisterCubit extends Cubit<RegisterState> {
   }
 
   void dismissError() {
-    emit(state.copyWith(status: RegisterStatus.initial));
+    emit(state.copyWith(status: ViewStatus.initial));
   }
 
   Future<void> submit({
@@ -41,7 +46,7 @@ class RegisterCubit extends Cubit<RegisterState> {
     required String password,
     required String role,
   }) async {
-    emit(state.copyWith(status: RegisterStatus.loading));
+    emit(state.copyWith(status: ViewStatus.loading));
 
     final result = await _registerUseCase(
       email: email,
@@ -51,12 +56,10 @@ class RegisterCubit extends Cubit<RegisterState> {
     );
 
     result.fold(
-      (failure) => emit(state.copyWith(
-        status: RegisterStatus.failure,
-        errorMessage: failure.message,
-      )),
+      (failure) =>
+          emit(state.copyWith(status: ViewStatus.failure, error: failure.message)),
       (user) => emit(state.copyWith(
-        status: RegisterStatus.success,
+        status: ViewStatus.success,
         user: user,
       )),
     );

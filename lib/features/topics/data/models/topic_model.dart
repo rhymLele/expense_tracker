@@ -33,7 +33,7 @@ class TopicModel extends TopicEntity {
       type: json['type'] as String? ?? 'LESSON',
       visibility: json['visibility'] as String? ?? 'PUBLIC',
       title: json['title'] as String? ?? '',
-      content: json['content'] as String?,
+      content: json['description'] as String? ?? json['content'] as String?,
       mediaUrl: json['mediaUrl'] as String?,
       likeCount: json['likeCount'] as int? ?? 0,
       commentCount: json['commentCount'] as int? ?? 0,

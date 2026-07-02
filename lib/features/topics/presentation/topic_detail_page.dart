@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/base/base_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/constants/colors.dart';
@@ -53,10 +54,10 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
       ),
       body: BlocBuilder<TopicDetailCubit, TopicDetailState>(
         builder: (context, state) {
-          if (state.status == TopicDetailStatus.loading) {
+          if (state.status.isLoading) {
             return const TopicDetailSkeleton();
           }
-          if (state.status == TopicDetailStatus.failure) {
+          if (state.status.isFailure) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(AppSizes.paddingXl),
@@ -67,7 +68,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
                         size: 48, color: AppColors.textHint),
                     const SizedBox(height: AppSizes.paddingMd),
                     Text(
-                      state.errorMessage ?? 'Không tải được bài viết',
+                      state.error ?? 'Không tải được bài viết',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),

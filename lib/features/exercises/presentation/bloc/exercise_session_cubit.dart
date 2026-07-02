@@ -1,10 +1,9 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../../../../core/base/base_cubit.dart';
 import '../../../enrollments/domain/usecases/get_today_tasks_usecase.dart';
 import '../../../submissions/domain/usecases/submit_answer_usecase.dart';
 import 'exercise_session_state.dart';
 
-class ExerciseSessionCubit extends Cubit<ExerciseSessionState> {
+class ExerciseSessionCubit extends BaseCubit<ExerciseSessionState> {
   final GetTodayTasksUseCase _getTodayTasks;
   final SubmitAnswerUseCase _submitAnswer;
   late String _enrollmentId;
@@ -15,6 +14,10 @@ class ExerciseSessionCubit extends Cubit<ExerciseSessionState> {
   })  : _getTodayTasks = getTodayTasks,
         _submitAnswer = submitAnswer,
         super(const ExerciseSessionState());
+
+  /// Phiên bài tập bắt đầu qua [start] từ UI.
+  @override
+  Future<void> fetchData() async {}
 
   Future<void> start(String enrollmentId) async {
     _enrollmentId = enrollmentId;

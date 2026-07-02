@@ -1,39 +1,58 @@
-import 'package:equatable/equatable.dart';
-
+import '../../../../core/base/base_state.dart';
 import '../../../topics/domain/entities/topic_entity.dart';
 
-enum FeedStatus { initial, loading, success, failure, loadingMore }
-
-class FeedState extends Equatable {
-  final FeedStatus status;
+class FeedState extends BaseState<FeedState> {
   final List<TopicEntity> topics;
   final bool hasMore;
   final int page;
-  final String? errorMessage;
+  final Set<String> likedTopicIds;
 
   const FeedState({
-    this.status = FeedStatus.initial,
+    super.status,
+    super.error,
     this.topics = const [],
     this.hasMore = true,
     this.page = 1,
-    this.errorMessage,
+    this.likedTopicIds = const {},
   });
 
   FeedState copyWith({
-    FeedStatus? status,
+    ViewStatus? status,
     List<TopicEntity>? topics,
     bool? hasMore,
     int? page,
-    String? errorMessage,
+    String? error,
+    Set<String>? likedTopicIds,
   }) =>
       FeedState(
         status: status ?? this.status,
         topics: topics ?? this.topics,
         hasMore: hasMore ?? this.hasMore,
         page: page ?? this.page,
-        errorMessage: errorMessage,
+        error: error,
+        likedTopicIds: likedTopicIds ?? this.likedTopicIds,
       );
 
+  /// Đang tải lần đầu (chưa có gì để hiển thị) → loading toàn trang.
+  bool get isInitialLoading => status.isLoading && topics.isEmpty;
+
+  /// Lỗi khi chưa có dữ liệu → trang lỗi + thử lại.
+  bool get isInitialError => status.isFailure && topics.isEmpty;
+
+  /// Tải xong nhưng rỗng → hiển thị bài mẫu (seed).
+  bool get showSeedPosts => status.isSuccess && topics.isEmpty;
+
   @override
-  List<Object?> get props => [status, topics, hasMore, page, errorMessage];
+  FeedState copyWithBase({ViewStatus? status, String? error}) =>
+      copyWith(status: status, error: error);
+
+  @override
+  List<Object?> get props => [
+        status,
+        error,
+        topics,
+        hasMore,
+        page,
+        (likedTopicIds.toList()..sort()),
+      ];
 }

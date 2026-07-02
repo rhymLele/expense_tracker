@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/base/base_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/colors.dart';
@@ -50,10 +51,10 @@ class _TemplateGalleryContent extends StatelessWidget {
       ),
       body: BlocBuilder<TemplateGalleryCubit, TemplateGalleryState>(
         builder: (context, state) {
-          if (state.status == TemplateGalleryStatus.loading) {
+          if (state.status.isLoading) {
             return const Center(child: BaseLoading());
           }
-          if (state.status == TemplateGalleryStatus.failure) {
+          if (state.status.isFailure) {
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -62,7 +63,7 @@ class _TemplateGalleryContent extends StatelessWidget {
                       size: 48, color: AppColors.textHint),
                   const SizedBox(height: AppSizes.paddingMd),
                   Text(
-                    state.errorMessage ?? 'Không tải được mẫu',
+                    state.error ?? 'Không tải được mẫu',
                     style: AppTextStyles.bodySmall,
                     textAlign: TextAlign.center,
                   ),

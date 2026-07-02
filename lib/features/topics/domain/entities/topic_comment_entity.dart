@@ -7,6 +7,7 @@ class TopicCommentEntity extends Equatable {
   final String? parentId;
   final String content;
   final DateTime createdAt;
+  final String? authorName;
 
   const TopicCommentEntity({
     required this.id,
@@ -15,6 +16,7 @@ class TopicCommentEntity extends Equatable {
     this.parentId,
     required this.content,
     required this.createdAt,
+    this.authorName,
   });
 
   @override

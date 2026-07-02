@@ -1,35 +1,31 @@
-import 'package:equatable/equatable.dart';
+import '../../../../../core/base/base_state.dart';
 import '../../../domain/entities/user_entity.dart';
 
-enum RegisterStatus { initial, loading, success, failure }
-
-class RegisterState extends Equatable {
-  final RegisterStatus status;
+class RegisterState extends BaseState<RegisterState> {
   final bool obscurePassword;
   final bool obscureConfirmPassword;
   final String selectedRole;
-  final String? errorMessage;
   final UserEntity? user;
 
   const RegisterState({
-    this.status = RegisterStatus.initial,
+    super.status,
+    super.error,
     this.obscurePassword = true,
     this.obscureConfirmPassword = true,
     this.selectedRole = 'student',
-    this.errorMessage,
     this.user,
   });
 
-  bool get isLoading => status == RegisterStatus.loading;
-  bool get isSuccess => status == RegisterStatus.success;
-  bool get isFailure => status == RegisterStatus.failure;
+  bool get isLoading => status.isLoading;
+  bool get isSuccess => status.isSuccess;
+  bool get isFailure => status.isFailure;
 
   RegisterState copyWith({
-    RegisterStatus? status,
+    ViewStatus? status,
     bool? obscurePassword,
     bool? obscureConfirmPassword,
     String? selectedRole,
-    String? errorMessage,
+    String? error,
     UserEntity? user,
   }) =>
       RegisterState(
@@ -38,17 +34,21 @@ class RegisterState extends Equatable {
         obscureConfirmPassword:
             obscureConfirmPassword ?? this.obscureConfirmPassword,
         selectedRole: selectedRole ?? this.selectedRole,
-        errorMessage: errorMessage,
+        error: error,
         user: user ?? this.user,
       );
 
   @override
+  RegisterState copyWithBase({ViewStatus? status, String? error}) =>
+      copyWith(status: status, error: error);
+
+  @override
   List<Object?> get props => [
         status,
+        error,
         obscurePassword,
         obscureConfirmPassword,
         selectedRole,
-        errorMessage,
         user,
       ];
 }

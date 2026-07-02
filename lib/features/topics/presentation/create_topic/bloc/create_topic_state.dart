@@ -1,43 +1,43 @@
-import 'package:equatable/equatable.dart';
+import '../../../../../core/base/base_state.dart';
 import '../../../domain/entities/topic_entity.dart';
 
-enum CreateTopicStatus { initial, loading, success, failure }
-
-class CreateTopicState extends Equatable {
-  final CreateTopicStatus status;
+class CreateTopicState extends BaseState<CreateTopicState> {
   final String selectedType;
   final String selectedVisibility;
-  final String? errorMessage;
   final TopicEntity? created;
 
   const CreateTopicState({
-    this.status = CreateTopicStatus.initial,
+    super.status,
+    super.error,
     this.selectedType = 'lesson',
     this.selectedVisibility = 'public',
-    this.errorMessage,
     this.created,
   });
 
-  bool get isLoading => status == CreateTopicStatus.loading;
-  bool get isSuccess => status == CreateTopicStatus.success;
-  bool get isFailure => status == CreateTopicStatus.failure;
+  bool get isLoading => status.isLoading;
+  bool get isSuccess => status.isSuccess;
+  bool get isFailure => status.isFailure;
 
   CreateTopicState copyWith({
-    CreateTopicStatus? status,
+    ViewStatus? status,
     String? selectedType,
     String? selectedVisibility,
-    String? errorMessage,
+    String? error,
     TopicEntity? created,
   }) =>
       CreateTopicState(
         status: status ?? this.status,
         selectedType: selectedType ?? this.selectedType,
         selectedVisibility: selectedVisibility ?? this.selectedVisibility,
-        errorMessage: errorMessage,
+        error: error,
         created: created ?? this.created,
       );
 
   @override
+  CreateTopicState copyWithBase({ViewStatus? status, String? error}) =>
+      copyWith(status: status, error: error);
+
+  @override
   List<Object?> get props =>
-      [status, selectedType, selectedVisibility, errorMessage, created];
+      [status, error, selectedType, selectedVisibility, created];
 }

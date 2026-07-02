@@ -1,37 +1,32 @@
-import 'package:equatable/equatable.dart';
-
+import '../../../../core/base/base_state.dart';
 import '../../domain/entities/topic_entity.dart';
 import '../../domain/entities/topic_comment_entity.dart';
 
-enum TopicDetailStatus { initial, loading, success, failure }
-
-class TopicDetailState extends Equatable {
-  final TopicDetailStatus status;
+class TopicDetailState extends BaseState<TopicDetailState> {
   final TopicEntity? topic;
   final List<TopicCommentEntity> comments;
   final bool isLiked;
   final bool isLikeLoading;
   final bool isCommentSubmitting;
-  final String? errorMessage;
 
   const TopicDetailState({
-    this.status = TopicDetailStatus.initial,
+    super.status,
+    super.error,
     this.topic,
     this.comments = const [],
     this.isLiked = false,
     this.isLikeLoading = false,
     this.isCommentSubmitting = false,
-    this.errorMessage,
   });
 
   TopicDetailState copyWith({
-    TopicDetailStatus? status,
+    ViewStatus? status,
     TopicEntity? topic,
     List<TopicCommentEntity>? comments,
     bool? isLiked,
     bool? isLikeLoading,
     bool? isCommentSubmitting,
-    String? errorMessage,
+    String? error,
   }) =>
       TopicDetailState(
         status: status ?? this.status,
@@ -40,8 +35,12 @@ class TopicDetailState extends Equatable {
         isLiked: isLiked ?? this.isLiked,
         isLikeLoading: isLikeLoading ?? this.isLikeLoading,
         isCommentSubmitting: isCommentSubmitting ?? this.isCommentSubmitting,
-        errorMessage: errorMessage,
+        error: error,
       );
+
+  @override
+  TopicDetailState copyWithBase({ViewStatus? status, String? error}) =>
+      copyWith(status: status, error: error);
 
   int get displayLikeCount {
     final base = topic?.likeCount ?? 0;
@@ -52,11 +51,11 @@ class TopicDetailState extends Equatable {
   @override
   List<Object?> get props => [
         status,
+        error,
         topic,
         comments,
         isLiked,
         isLikeLoading,
         isCommentSubmitting,
-        errorMessage,
       ];
 }

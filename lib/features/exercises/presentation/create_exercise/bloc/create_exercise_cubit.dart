@@ -1,16 +1,19 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../../../../../core/base/base_cubit.dart';
 import '../../../../../core/errors/app_exception.dart';
 import '../../../data/datasources/exercises_remote_datasource.dart';
 import '../../../domain/entities/exercise_template_entity.dart';
 import 'create_exercise_state.dart';
 
-class CreateExerciseCubit extends Cubit<CreateExerciseState> {
+class CreateExerciseCubit extends BaseCubit<CreateExerciseState> {
   final ExercisesRemoteDataSource _datasource;
 
   CreateExerciseCubit({required ExercisesRemoteDataSource datasource})
       : _datasource = datasource,
         super(const CreateExerciseState());
+
+  /// Form-driven — khởi tạo qua [initialize] từ UI.
+  @override
+  Future<void> fetchData() async {}
 
   void initialize({ExerciseTemplateEntity? prefill}) {
     if (prefill == null) return;

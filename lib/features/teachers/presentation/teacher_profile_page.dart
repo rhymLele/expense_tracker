@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import '../../../core/base/base_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/constants/colors.dart';
 import '../../../core/constants/sizes.dart';
 import '../../../core/constants/text_styles.dart';
+import '../../../core/di/service_locator.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/skeletons/app_skeletons.dart';
+import '../../auth/presentation/shared/src.dart';
+import '../../chat/data/datasources/chat_remote_datasource.dart';
+import '../../chat/presentation/pages/chat_room_page.dart';
 import 'bloc/teacher_profile_cubit.dart';
 import 'bloc/teacher_profile_state.dart';
 import 'teacher_profile_view_model.dart';
@@ -39,11 +44,11 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
       backgroundColor: AppColors.background,
       body: BlocBuilder<TeacherProfileCubit, TeacherProfileState>(
         builder: (context, state) {
-          if (state.status == TeacherProfileStatus.loading) {
+          if (state.status.isLoading) {
             return const TeacherProfileSkeleton();
           }
-          if (state.status == TeacherProfileStatus.failure) {
-            return _ErrorBody(message: state.errorMessage);
+          if (state.status.isFailure) {
+            return _ErrorBody(message: state.error);
           }
           final teacher = state.teacher;
           if (teacher == null) return const SizedBox.shrink();
@@ -53,6 +58,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
               _TeacherAppBar(
                 name: teacher.userName,
                 avatarUrl: teacher.userAvatarUrl,
+                teacherUserId: teacher.userId,
                 isFollowing: state.isFollowing,
                 isFollowLoading: state.isFollowLoading,
                 onFollowTap: () =>
@@ -109,6 +115,7 @@ class _TeacherProfilePageState extends State<TeacherProfilePage> {
 class _TeacherAppBar extends StatelessWidget {
   final String name;
   final String? avatarUrl;
+  final String teacherUserId;
   final bool isFollowing;
   final bool isFollowLoading;
   final VoidCallback onFollowTap;
@@ -116,6 +123,7 @@ class _TeacherAppBar extends StatelessWidget {
   const _TeacherAppBar({
     required this.name,
     this.avatarUrl,
+    required this.teacherUserId,
     required this.isFollowing,
     required this.isFollowLoading,
     required this.onFollowTap,
@@ -138,8 +146,9 @@ class _TeacherAppBar extends StatelessWidget {
               CircleAvatar(
                 radius: 44,
                 backgroundColor: AppColors.primary,
-                backgroundImage:
-                    avatarUrl != null ? NetworkImage(avatarUrl!) : null,
+                backgroundImage: avatarUrl != null
+                    ? NetworkImage(avatarUrl!)
+                    : null,
                 child: avatarUrl == null
                     ? Text(
                         name.isNotEmpty ? name[0].toUpperCase() : 'T',
@@ -160,7 +169,7 @@ class _TeacherAppBar extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.chat_bubble_outline, size: 20),
           tooltip: 'Nhắn tin',
-          onPressed: () => _showMessageDialog(context, name),
+          onPressed: () => _startChat(context, teacherUserId, name),
         ),
         Padding(
           padding: const EdgeInsets.only(right: AppSizes.paddingMd),
@@ -177,8 +186,9 @@ class _TeacherAppBar extends StatelessWidget {
                         ? AppColors.textSecondary
                         : AppColors.primary,
                     side: BorderSide(
-                      color:
-                          isFollowing ? AppColors.divider : AppColors.primary,
+                      color: isFollowing
+                          ? AppColors.divider
+                          : AppColors.primary,
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSizes.paddingMd,
@@ -197,58 +207,39 @@ class _TeacherAppBar extends StatelessWidget {
   }
 }
 
-void _showMessageDialog(BuildContext context, String teacherName) {
-  showModalBottomSheet<void>(
-    context: context,
-    backgroundColor: AppColors.background,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.radiusLg)),
-    ),
-    builder: (_) => Padding(
-      padding: EdgeInsets.only(
-        left: AppSizes.paddingLg,
-        right: AppSizes.paddingLg,
-        top: AppSizes.paddingLg,
-        bottom: AppSizes.paddingLg + MediaQuery.of(context).viewInsets.bottom,
+// Open or create a direct conversation with the teacher, then navigate to ChatRoomPage.
+Future<void> _startChat(
+  BuildContext context,
+  String teacherUserId,
+  String teacherName,
+) async {
+  final authState = context.read<AuthCubit>().state;
+  if (authState is! AuthAuthenticated) return;
+  final currentUserId = authState.user.id;
+
+  final messenger = ScaffoldMessenger.of(context);
+  final navigator = Navigator.of(context);
+
+  try {
+    final conv = await sl<ChatRemoteDataSource>().startDirect(
+      teacherUserId,
+      currentUserId,
+    );
+
+    if (!context.mounted) return;
+    await navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            ChatRoomPage(conversation: conv, currentUserId: currentUserId),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.divider,
-                borderRadius: BorderRadius.circular(AppSizes.radiusFull),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSizes.paddingMd),
-          Text('Nhắn tin cho $teacherName', style: AppTextStyles.titleMedium),
-          const SizedBox(height: AppSizes.paddingXs),
-          const Text(
-            'Tính năng chat đang được phát triển.\nBạn sẽ sớm có thể nhắn tin trực tiếp!',
-            style: AppTextStyles.bodySmall,
-          ),
-          const SizedBox(height: AppSizes.paddingLg),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.background,
-                elevation: 0,
-              ),
-              child: const Text('Đã hiểu'),
-            ),
-          ),
-        ],
+    );
+  } catch (_) {
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Không thể mở cuộc trò chuyện, thử lại sau'),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _ErrorBody extends StatelessWidget {
@@ -263,12 +254,17 @@ class _ErrorBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.textHint),
+            const Icon(
+              Icons.error_outline,
+              size: 48,
+              color: AppColors.textHint,
+            ),
             const SizedBox(height: AppSizes.paddingMd),
             Text(
               message ?? 'Không tải được thông tin giáo viên',
-              style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSizes.paddingLg),

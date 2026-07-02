@@ -1,23 +1,19 @@
-import 'package:equatable/equatable.dart';
+import '../../../../../core/base/base_state.dart';
 import '../../../domain/entities/enrollment_entity.dart';
 
-enum RoadmapHomeStatus { initial, loading, success, failure }
-
-class RoadmapHomeState extends Equatable {
-  final RoadmapHomeStatus status;
+class RoadmapHomeState extends BaseState<RoadmapHomeState> {
   final EnrollmentEntity? active;
   final List<EnrollmentEntity> queue; // queued enrollments (status == 'queued')
   final Set<String> completedTaskIds; // local toggle state
   final bool isDayCompleted; // true when all tasks toggled
-  final String? errorMessage;
 
   const RoadmapHomeState({
-    this.status = RoadmapHomeStatus.initial,
+    super.status,
+    super.error,
     this.active,
     this.queue = const [],
     this.completedTaskIds = const {},
     this.isDayCompleted = false,
-    this.errorMessage,
   });
 
   int get doneCount => completedTaskIds.length;
@@ -31,12 +27,12 @@ class RoadmapHomeState extends Equatable {
   }
 
   RoadmapHomeState copyWith({
-    RoadmapHomeStatus? status,
+    ViewStatus? status,
     EnrollmentEntity? active,
     List<EnrollmentEntity>? queue,
     Set<String>? completedTaskIds,
     bool? isDayCompleted,
-    String? errorMessage,
+    String? error,
   }) =>
       RoadmapHomeState(
         status: status ?? this.status,
@@ -44,10 +40,14 @@ class RoadmapHomeState extends Equatable {
         queue: queue ?? this.queue,
         completedTaskIds: completedTaskIds ?? this.completedTaskIds,
         isDayCompleted: isDayCompleted ?? this.isDayCompleted,
-        errorMessage: errorMessage,
+        error: error,
       );
 
   @override
+  RoadmapHomeState copyWithBase({ViewStatus? status, String? error}) =>
+      copyWith(status: status, error: error);
+
+  @override
   List<Object?> get props =>
-      [status, active, queue, completedTaskIds, isDayCompleted, errorMessage];
+      [status, error, active, queue, completedTaskIds, isDayCompleted];
 }

@@ -1,18 +1,22 @@
 import 'dart:developer' as dev;
-import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/base/base_cubit.dart';
+import '../../../../../core/base/base_state.dart';
 import '../../../data/datasources/enrollments_remote_datasource.dart';
 import 'roadmap_home_state.dart';
 
-class RoadmapHomeCubit extends Cubit<RoadmapHomeState> {
+class RoadmapHomeCubit extends LoadCubit<RoadmapHomeState> {
   final EnrollmentsRemoteDataSource _ds;
 
   RoadmapHomeCubit({required EnrollmentsRemoteDataSource datasource})
       : _ds = datasource,
         super(const RoadmapHomeState());
 
+  @override
+  Future<void> fetchData() => load();
+
   Future<void> load() async {
-    emit(state.copyWith(status: RoadmapHomeStatus.loading));
+    emit(state.copyWith(status: ViewStatus.loading));
     await _fetch();
   }
 
@@ -23,23 +27,19 @@ class RoadmapHomeCubit extends Cubit<RoadmapHomeState> {
       final active = await _ds.getActive();
       final all = await _ds.getMyEnrollments();
 
-      final queue = all
-          .where((e) => e.status == 'queued')
-          .toList();
+      final queue = all.where((e) => e.status == 'queued').toList();
 
       emit(state.copyWith(
-        status: RoadmapHomeStatus.success,
+        status: ViewStatus.success,
         active: active,
         queue: queue,
         completedTaskIds: {},
         isDayCompleted: false,
       ));
     } catch (e, st) {
-      dev.log('RoadmapHomeCubit._fetch error: $e', stackTrace: st, name: 'RoadmapHome');
-      emit(state.copyWith(
-        status: RoadmapHomeStatus.failure,
-        errorMessage: e.toString(),
-      ));
+      dev.log('RoadmapHomeCubit._fetch error: $e',
+          stackTrace: st, name: 'RoadmapHome');
+      emit(state.copyWith(status: ViewStatus.failure, error: e.toString()));
     }
   }
 
@@ -89,7 +89,7 @@ class RoadmapHomeCubit extends Cubit<RoadmapHomeState> {
       await _fetch();
     } catch (e, st) {
       dev.log('cancel error: $e', stackTrace: st, name: 'RoadmapHome');
-      emit(state.copyWith(errorMessage: e.toString()));
+      emit(state.copyWith(error: e.toString()));
     }
   }
 }

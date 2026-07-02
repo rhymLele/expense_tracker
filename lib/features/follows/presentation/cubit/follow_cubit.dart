@@ -1,11 +1,10 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../../../../core/base/base_cubit.dart';
 import '../../domain/usecases/follow_teacher_usecase.dart';
 import '../../domain/usecases/get_following_usecase.dart';
 import '../../domain/usecases/unfollow_teacher_usecase.dart';
 import 'follow_state.dart';
 
-class FollowCubit extends Cubit<FollowState> {
+class FollowCubit extends BaseCubit<FollowState> {
   final GetFollowingUseCase _getFollowing;
   final FollowTeacherUseCase _follow;
   final UnfollowTeacherUseCase _unfollow;
@@ -18,6 +17,9 @@ class FollowCubit extends Cubit<FollowState> {
         _follow = follow,
         _unfollow = unfollow,
         super(const FollowState());
+
+  @override
+  Future<void> fetchData() => load();
 
   Future<void> load() async {
     final result = await _getFollowing();
